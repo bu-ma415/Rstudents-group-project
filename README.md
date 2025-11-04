@@ -11,5 +11,3 @@ https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-R
 https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5/about_data
 
 https://data.sfgov.org/Health-and-Social-Services/Health-Inspection-Scores-2016-2019-/pyih-qa8i/about_data
-
-https://data.lacounty.gov/datasets/19b6607ac82c4512b10811870975dbdc/about 
