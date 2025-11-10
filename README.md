@@ -38,6 +38,4 @@ Setup:
 
 1-2 pages for citations
 
-)
-
 
