@@ -3,7 +3,7 @@
 Links for the datasets:
 
 
-Food establishments inspection data from Boston, NYC, Chicago, and possibly LA that we can combine and use:
+Food establishments inspection data from Boston, NYC, Chicago, and possibly San Francisco that we can combine and use:
 
 https://data.boston.gov/dataset/food-establishment-inspections/resource/4582bec6-2b4f-4f9e-bc55-cbaa73117f4c
 
