@@ -13,3 +13,13 @@ https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5/
 
 https://data.sfgov.org/Health-and-Social-Services/Health-Inspection-Scores-2016-2019-/pyih-qa8i/about_data
 
+Main question: Common overall violations within each city
+Individual questions:
+Gian - 
+Seun - 
+Niki -
+Arohi -
+
+EDA - most frequent violations, most common time that violations are committed (i.e - before or after typical health inspections occur), restaurants with higher proportion of fails vs passes (pizza restaurants vs something else)
+
+
