@@ -26,6 +26,18 @@ Niki -
 Arohi - What is the trend of most frequent violations been over time? For example, what are the most common violations in 2015 overall vs in 2020? Why?
 
 
-EDA - most frequent violations, most common time that violations are committed (i.e - before or after typical health inspections occur), restaurants with higher proportion of fails vs passes (pizza restaurants vs something else)
+Setup: 
+
+1-2 pages for intro 
+
+2-3 pages for EDA (most frequent violations, most common season they're committed, higher proportions of fails vs passes) 
+
+6-8 pages for context for individual question + analysis + graphs + discussion
+
+1-2 for results and conclusion 
+
+1-2 pages for citations
+
+)
 
 
