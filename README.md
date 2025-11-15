@@ -21,7 +21,7 @@ Gian - What is the most frequent violation in each city? What is the trend?
 
 Seun - What is the pattern of violations geographically within each city? For example, what zipcodes have the most prominent one?
 
-Niki -
+Niki - What month and season has the most food inspection violations across each city? Overall?
 
 Arohi - What is the trend of most frequent violations been over time? For example, what are the most common violations in 2015 overall vs in 2020? Why?
 
