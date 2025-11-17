@@ -37,11 +37,7 @@ Setup:
 6-8 pages for context for individual question + analysis + graphs + discussion
 
 
-
-Motivation: large variety of different datatypes and there’s a lot of overlapping variables for each different city (so like violation type, location coordinates, comments, etc) 
-- We did this because we knew we could join/merge the information into one cohesive dataset we can pull from 
-
-We chose to do this because food inspection was an interesting topic of discussion that we all agreed we wanted to research 
+We chose to do this because food inspection was an interesting topic of discussion that we all agreed we wanted to research. We agreed it would be great for this project because it has a large variety of different datatypes and there are of overlapping variables for each different city (so like violation type, location coordinates, comments, etc). This will allow us to do cross-city comparisons as well as inter-city analyses.
 
 Food establishment inspections dataset from health divisions of the department of inspectional services from 
 - Boston 
