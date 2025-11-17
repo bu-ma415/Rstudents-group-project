@@ -1,0 +1,33 @@
+---
+title: "11-20 Milestone"
+output: html_document
+date: "2025-11-17"
+---
+
+# Project Description
+
+### Why did we choose this dataset (motivation)?
+
+### Describe the dataset
+
+## Data Cleaning
+
+```{r}
+summary(cars)
+```
+
+## Coming up with our research questions
+
+```{r}
+plot(pressure)
+```
+
+## [Individual] Explain why you chose your research question and what you plan to do with it
+
+### Gian
+
+### Niki
+
+### Seun
+
+### Arohi
