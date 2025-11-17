@@ -22,6 +22,22 @@ summary(cars)
 plot(pressure)
 ```
 
+## EDA questions to work on:
+1. What is the time range of the data? Are there any gaps, peaks, or dips?
+Output: Histogram of dates
+Why: To show periods of data collection, patterns in how it is collected, and if there are any gaps in the data collection process. 
+
+2. What is the distribution of inspection outcomes and risk levels across all cities?
+Output: Bar Chart of Risk; Bar Chart of Outcomes
+Why: To show the overall ratio of "High" vs. "Low" risk violations and "Pass" vs. "Fail" in the entire dataset
+
+3. For cities with scores (NYC, SF), what does the score distribution look like?
+Output: Histogram of scores
+Why: To see the range of grades given, and where most restaurants fall or cluster around
+
+4. Which cities have the highest proportion of "Fail" outcomes or "High Risk" violations?
+Output: Bar Chart
+
 ## [Individual] Explain why you chose your research question and what you plan to do with it
 
 ### Gian
