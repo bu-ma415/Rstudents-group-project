@@ -17,7 +17,7 @@ Main question: Common overall violations within each city
 
 Individual questions:
 
-Gian - What is the most frequent violation in each city? What is the trend?
+Gian - What is the most frequent violation in each city? What is the trend? *change
 
 Seun - What is the pattern of violations geographically within each city? For example, what zipcodes have the most prominent one?
 
