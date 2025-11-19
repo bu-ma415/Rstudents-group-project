@@ -36,19 +36,6 @@ Setup:
 
 6-8 pages for context for individual question + analysis + graphs + discussion
 
-
-We chose to do this because food inspection was an interesting topic of discussion that we all agreed we wanted to research. We agreed it would be great for this project because it has a large variety of different datatypes and there are of overlapping variables for each different city (so like violation type, location coordinates, comments, etc). This will allow us to do cross-city comparisons as well as inter-city analyses.
-
-Food establishment inspections dataset from health divisions of the department of inspectional services from 
-- Boston 
-- NYC 
-- San Francisco 
-- Chicago 
-
-We took a main question and separated it into 4 individual questions that we will each conduct data analysis for about the specifics of each part of common violations within cities.
-
-1-2 for results and conclusion 
-
 1-2 pages for citations
 
 
