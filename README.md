@@ -19,7 +19,7 @@ Individual questions:
 
 Gian - What is the pattern of violations geographically within each city? For example, what zipcodes have the most prominent one?
 
-What is the most frequent violation in each city? What is the trend? *change
+What is the most frequent violation in each city? What is the trend? 
 
 Seun - 
 
