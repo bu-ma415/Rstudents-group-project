@@ -19,9 +19,8 @@ Individual questions:
 
 Gian - What is the pattern of violations geographically within each city? For example, what zipcodes have the most prominent one?
 
-What is the most frequent violation in each city? What is the trend? *change
-
-Seun - 
+Seun - 1. Do specific categories of restaurants (e.g., 'Pizza', 'Sushi', 'Coffee Shop') disproportionately receive certain categories of violations (e.g., 'Pest Control', 'Food Temperature', 'Employee Hygiene')?
+2. How do the types and severity (risk level) of violations found during 'Complaint-Driven' inspections differ from those found during 'Routine' inspections?
 
 Niki - What month and season has the most food inspection violations across each city? Overall?
 
