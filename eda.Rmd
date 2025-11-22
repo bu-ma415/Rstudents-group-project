@@ -9,6 +9,9 @@ The goal is to understand the overall shape of our data.
 ```{r Load Data}
 library(tidyverse)
 library(sf)
+library(dplyr)     
+library(readr)     
+library(stringr)   
 
 inspections <- read_csv("data/inspections_clean.csv") # main dataset
 ```
