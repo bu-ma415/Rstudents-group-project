@@ -7,9 +7,8 @@ output: html_document
 The goal is to understand the overall shape of our data. 
 
 ```{r Load Data}
-library(dplyr)     
-library(readr)     
-library(stringr)   
+library(tidyverse)
+library(sf)
 
 inspections <- read_csv("data/inspections_clean.csv") # main dataset
 ```
@@ -21,6 +20,19 @@ ggplot(inspections_clean, aes(x = inspection_date)) + geom_histogram(bins = 50)
 ```
 
 
+### Boston Zipcodes Map
+```{r}
+
+bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
+
+bos_borders <- bos |> st_union() |>
+  st_buffer(.5)
+ggplot(bos_borders) +
+  geom_sf(data=bos, aes(fill = ZIP5))
+
+glimpse(bos)
+
+```
 
 
 
