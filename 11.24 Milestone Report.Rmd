@@ -1,0 +1,59 @@
+---
+title: "11-24 Milestone"
+output: "Arohi, Seun, Gian, and Niki"
+date: "2025-11-17"
+---
+
+# Project Description
+
+Our project examines violations from food establishments in Boston, New York City (NYC), Chicago, and San Francisco. In this data, we are looking to compare, contrast, and find relationships between variables related to common overall violations within each city, year, type of establishment, type of violation, and other variables. Our setup looks to be for each of us to thoroughly research and analyze an individual question related to common food establishment violations. Generally, we are dedicating 1-2 pages for the introduction, 2-3 pages for the Exploratory Data Analysis or EDA (describing how many variables, what kinds, plots, etc), 6-8 pages for answering our individual questions, 1-2 pages for results and conclusions, and 1-2 pages for citations.
+
+## Motivation
+
+A common factor we all liked and were comfortable working with was food, so we thought it would be interesting to inspect food establishment violations in our own city of Boston. We then wanted to expand to other nearby cities such as New York City, as well as nationally in San Francisco and Chicago, to see if specific violations were dependent on location, type of establishment, etc. 
+
+### Describe the dataset
+
+We merged 4 datasets (one from Boston, NYC, Chicago and SF) taken from their respective state government website to collect a comprehensive dataset that we could pull a multitude of information from. We cleaned the data by aligning variable names, organizing by type, and more, which is shown below. 
+
+#### Data Cleaning
+
+Our data cleaning method started with loading the data, standardizing the columns, combining the datasets, and standardizing the values. The code for our data cleaning is in an RMD file linked to the main branch of our GitHub repository. 
+
+##### EDA questions to work on:
+1. What is the time range of the data? Are there any gaps, peaks, or dips? (Arohi)
+Output: Histogram of dates
+Why: To show periods of data collection, patterns in how it is collected, and if there are any gaps in the data collection process. 
+
+2. What is the distribution of inspection outcomes and risk levels across all cities?
+Output: Bar Chart of Risk; Bar Chart of Outcomes
+Why: To show the overall ratio of "High" vs. "Low" risk violations and "Pass" vs. "Fail" in the entire dataset
+
+3. For cities with scores (NYC, SF), what does the score distribution look like?
+Output: Histogram of scores
+Why: To see the range of grades given, and where most restaurants fall or cluster around
+
+4. Which cities have the highest proportion of "Fail" outcomes or "High Risk" violations?
+Output: Bar Chart
+
+###### Individual questions: 
+
+### Gian
+
+My main research question has to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
+
+I will also create geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
+
+My main visualizations will all be based on the map of Boston with the zipcode subsectors. I would like to do a density map with the amount of health code violations, as well as a map that categorizes each zipcode by the most common type of violation in for each zipcode (Dishwashing Facilities, Signage, Cross Contamination, Building Maintenance, etc) by color.
+
+### Niki
+
+### Seun
+
+### Arohi
+
+I will be looking at the trend of most frequent violations over time. Within each city, what are the most common violations over a 10 year period? Why would that be?
+
+I will additionally be looking at specifics of that question, like what the most common violations are in 2015 overall versus in 2020? Why may that be? 
+
+This was an individual question(s) I chose because I am interested in comparing and contrasting common violations not just within each city, but overall in comparison to one another. If one city has more violations with a specific kind of establishment (pizza restaurants, for example), is that a correlation to the amount/volume of those establishments in the area? Or do other cities also have violations for that establishment in the area and is that simply a common occurance for those establishments to have? 
