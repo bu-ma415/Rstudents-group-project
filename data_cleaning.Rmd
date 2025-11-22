@@ -198,5 +198,52 @@ glimpse(inspections_clean)
 
 inspections_clean |> 
   count(city_source, risk_level_standard, sort = TRUE)
+inspections_clean <- inspections_clean |>
+  
+  # Standardize Inspection Outcome
+  mutate(
+    # Make all original columns lowercase for easier matching
+    results_lower = tolower(results),
+    result_lower = tolower(result),
+    
+    inspection_outcome = case_when(
+      
+      # Chicago
+      str_detect(results_lower, "pass w/ conditions") ~ "Pass w/ Conditions",
+      str_detect(results_lower, "pass") ~ "Pass",
+      str_detect(results_lower, "fail") ~ "Fail",
+      str_detect(results_lower, "out of business") ~ "Out of Business",
+      
+      # NYC
+      grade == "A" ~ "Pass",
+      grade == "B" ~ "Pass w/ Conditions",
+      grade == "C" ~ "Fail",
+      grade == "P" ~ "Pending", # 'P' is for Pending
+      grade == "Z" ~ "Pending", # 'Z' is for Pending
+      
+      # Boston
+      str_detect(result_lower, "pass") ~ "Pass",
+      str_detect(result_lower, "fail") ~ "Fail",
+      str_detect(result_lower, "not found") ~ "Fail",
+      viol_status == "Fail" ~ "Fail",  # Fallback for Boston
+      
+      # san Francisco
+      # Using the numeric score cutoffs
+      city_source == "San Francisco" & inspection_score >= 90 ~ "Pass",
+      city_source == "San Francisco" & inspection_score >= 86 ~ "Pass w/ Conditions",
+      city_source == "San Francisco" & inspection_score >= 71 ~ "Fail",
+      city_source == "San Francisco" & inspection_score < 71 ~ "Fail",
+      
+      # default for all others
+      TRUE ~ "Unknown"
+    )
+  ) |>
+  
+  #  Clean up temporary columns
+  select(
+    -results_lower, -result_lower # We don't need these anymore
+  )
+
+#write_csv(inspections_clean, "data/inspections_clean.csv")
 ```
 
