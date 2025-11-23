@@ -21,7 +21,7 @@ We merged 4 datasets (one from Boston, NYC, Chicago and SF) taken from their res
 Our data cleaning method started with loading the data, standardizing the columns, combining the datasets, and standardizing the values. The code for our data cleaning is in an RMD file linked to the main branch of our GitHub repository. 
 
 ##### EDA questions to work on:
-1. What is the time range of the data? Are there any gaps, peaks, or dips? (Arohi)
+1. What is the time range of the data? Are there any gaps, peaks, or dips?
 Output: Histogram of dates
 Why: To show periods of data collection, patterns in how it is collected, and if there are any gaps in the data collection process. 
 
@@ -40,9 +40,9 @@ Output: Bar Chart
 
 ### Gian
 
-My main research question has to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
+my main research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
 
-I will also create geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
+I may also be able to do geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
 
 My main visualizations will all be based on the map of Boston with the zipcode subsectors. I would like to do a density map with the amount of health code violations, as well as a map that categorizes each zipcode by the most common type of violation in for each zipcode (Dishwashing Facilities, Signage, Cross Contamination, Building Maintenance, etc) by color.
 
