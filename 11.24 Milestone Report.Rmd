@@ -40,7 +40,7 @@ Output: Bar Chart
 
 ### Gian
 
-my main research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
+my research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
 
 I may also be able to do geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
 
