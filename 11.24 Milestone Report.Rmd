@@ -55,6 +55,12 @@ I am interested in this research question because temperature, humidity, tourism
 
 ### Seun
 
+My primary research question connects the type of restaurant to the type of violation to figure out if specific categories of restaurants disproportionately receive certain categories of violations.
+
+I will be looking at cuisine descriptions and violation descriptions and analyzing their phrases. 
+
+I am interested in this question because it explores whether a restaurant's business model or the food it serves creates a predisposition for specific health code failures. For example, are restaurants serving raw fish (like sushi) more likely to receive "improper food temperature" violations? Are bakeries, which use large amounts of dry goods, more prone to "pest" violations?
+
 ### Arohi
 
 I will be looking at the trend of most frequent violations over time. Within each city, what are the most common violations over a 10 year period? Why would that be?
