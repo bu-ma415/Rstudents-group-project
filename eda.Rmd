@@ -11,7 +11,7 @@ library(tidyverse)
 library(sf)
 library(dplyr)     
 library(readr)     
-library(stringr)   
+library(stringr)
 
 inspections <- read_csv("data/inspections_clean.csv") # main dataset
 ```
@@ -36,7 +36,31 @@ ggplot(bos_borders) +
 glimpse(bos)
 
 ```
+## Top Violations Overall
+```{r}
+inspections |> 
+  count(violation_desc, sort = TRUE) |> 
+  slice_head(n = 10)
+```
+We can see here that the top violation found overall from the 4 cities was non-food contact surfaces clean. It's interesting that this is the top as I would have maybe thought it would be violation of food protection since that's what my mind immediately thinks about when it comes to food inspection.
 
+## Days of the week that see the most inspections
+```{r}
+inspections |> 
+  mutate(wday = wday(inspection_date, label = TRUE)) |> 
+  count(wday) |>
+  ggplot(aes(wday, n)) +
+  geom_col() +
+  labs(title = "Inspections by Day of Week")
+```
+As expected we see that inspections do not typically occur on the weekends (Sunday and Saturday) and it seems that inspections closely occur every day during the week but Tuesday seems to have a slightly higher rate.
 
+## Inspection Frequency per Restaurant
+```{r}
+ggplot(inspections |> count(restaurant_name), aes(n)) +
+  geom_histogram(breaks = seq(0, 50, by = 1), color="black", fill="skyblue") +
+  labs(title="Distribution of Inspections per Restaurant", x="Number of Inspections", y="Number of Restaurants")
+```
 
+In the plot above we can see that are as the number of inspections increase the amount of restaraunts that have that many inspections decrease. This makes sense because if restaurants are consistently failing the food inspection most people won't want to eat their which would affect whether if the business can stay open or not. 
 
