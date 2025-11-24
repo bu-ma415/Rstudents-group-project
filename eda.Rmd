@@ -3,14 +3,18 @@ title: "EDA Report"
 output: html_document
 ---
 
-The goal is to understand the overall shape of our data. 
+## EDA Report
+
+The goal is to understand the overall shape of our data.
+
 ```{r Load Data}
+library(tidyverse)
+library(sf)
 library(dplyr)     
 library(readr)     
-library(stringr) 
-library(tidyverse)
 library(lubridate)
 library(tidytext)
+library(stringr)
 
 inspections <- read_csv("data/inspections_clean.csv") # main dataset
 glimpse(inspections)
@@ -39,11 +43,12 @@ ggplot(inspections, aes(x = inspection_outcome)) +
 
 #Risks
 ggplot(inspections, aes(x = risk_level_standard)) + labs(title = "Risks") + geom_bar()
+  
+### Time Range of the Data
 
-#Inspections Over Time
-ggplot(inspections, aes(x = inspection_date)) + 
-  geom_histogram(bins = 50) +
-  scale_y_continuous(labels = label_comma()) +
+```{r}
+ggplot(inspections_clean, aes(x = inspection_date)) + geom_histogram(bins = 50) + 
+scale_y_continuous(labels = label_comma()) +
   labs(title = "Distribution of Inspections Over Time", x = "Date", y = "Count")
 ```
 Our initial phase of exploratory data analysis (EDA) focused on understanding the overall shape, distribution, and integrity of our combined 1.4 million-row dataset. This initial analysis confirms our combined dataset is large, usable, and modern, but critically imbalanced.
@@ -195,4 +200,69 @@ Chicago: 60827, 60619
 New York: 11436, 11428
 
 San Francisco: 94134, 94118
+### Boston Zipcodes Map
 
+```{r}
+
+bos_insp <- inspections_clean <-
+  filter(city_source == "Boston")
+bos_shp <- st_read("Boston Shapefiles/ZIP_Codes.shp")
+
+bos_borders <- bos_shp |> st_union() |>
+  st_buffer(.5)
+ggplot(bos_borders) +
+  geom_sf(data=bos, aes(fill = ZIP5))
+
+
+# Density map of restaurants in each zipcode
+
+rstnt_density <- bos_insp |>
+  group_by(restaurant_name) |>
+  group_by(zip_code) |>
+  mutate(n_per_zip = N())
+
+bos$zip_code <- bos$ZIP5
+
+bos -> full_join(rstnt_density, bos, by = zip_code)
+
+ggplot(bos_borders) +
+  geom_sf(data=bos, aes(fill_n_per_zip))
+
+
+
+```
+
+There are 43 zip codes in the City of Boston
+
+## Top Violations Overall
+
+```{r}
+inspections |> 
+  count(violation_desc, sort = TRUE) |> 
+  slice_head(n = 10)
+```
+
+We can see here that the top violation found overall from the 4 cities was non-food contact surfaces clean. It's interesting that this is the top as I would have maybe thought it would be violation of food protection since that's what my mind immediately thinks about when it comes to food inspection.
+
+## Days of the week that see the most inspections
+
+```{r}
+inspections |> 
+  mutate(wday = wday(inspection_date, label = TRUE)) |> 
+  count(wday) |>
+  ggplot(aes(wday, n)) +
+  geom_col() +
+  labs(title = "Inspections by Day of Week")
+```
+
+As expected we see that inspections do not typically occur on the weekends (Sunday and Saturday) and it seems that inspections closely occur every day during the week but Tuesday seems to have a slightly higher rate.
+
+## Inspection Frequency per Restaurant
+
+```{r}
+ggplot(inspections |> count(restaurant_name), aes(n)) +
+  geom_histogram(breaks = seq(0, 50, by = 1), color="black", fill="skyblue") +
+  labs(title="Distribution of Inspections per Restaurant", x="Number of Inspections", y="Number of Restaurants")
+```
+
+In the plot above we can see that are as the number of inspections increase the amount of restaraunts that have that many inspections decrease. This makes sense because if restaurants are consistently failing the food inspection most people won't want to eat their which would affect whether if the business can stay open or not.

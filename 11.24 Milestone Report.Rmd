@@ -1,28 +1,26 @@
 ---
-title: "11-20 Milestone"
-output: html_document
+title: "11-24 Milestone"
+output: "Arohi, Seun, Gian, and Niki"
 date: "2025-11-17"
 ---
 
 # Project Description
 
-### Why did we choose this dataset (motivation)?
+Our project examines violations from food establishments in Boston, New York City (NYC), Chicago, and San Francisco. In this data, we are looking to compare, contrast, and find relationships between variables related to common overall violations within each city, year, type of establishment, type of violation, and other variables. Our setup looks to be for each of us to thoroughly research and analyze an individual question related to common food establishment violations. Generally, we are dedicating 1-2 pages for the introduction, 2-3 pages for the Exploratory Data Analysis or EDA (describing how many variables, what kinds, plots, etc), 6-8 pages for answering our individual questions, 1-2 pages for results and conclusions, and 1-2 pages for citations.
+
+## Motivation
+
+A common factor we all liked and were comfortable working with was food, so we thought it would be interesting to inspect food establishment violations in our own city of Boston. We then wanted to expand to other nearby cities such as New York City, as well as nationally in San Francisco and Chicago, to see if specific violations were dependent on location, type of establishment, etc. 
 
 ### Describe the dataset
 
-## Data Cleaning
+We merged 4 datasets (one from Boston, NYC, Chicago and SF) taken from their respective state government website to collect a comprehensive dataset that we could pull a multitude of information from. We cleaned the data by aligning variable names, organizing by type, and more, which is shown below. 
 
-```{r}
-summary(cars)
-```
+#### Data Cleaning
 
-## Coming up with our research questions
+Our data cleaning method started with loading the data, standardizing the columns, combining the datasets, and standardizing the values. The code for our data cleaning is in an RMD file linked to the main branch of our GitHub repository. 
 
-```{r}
-plot(pressure)
-```
-
-## EDA questions to work on:
+##### EDA questions to work on:
 1. What is the time range of the data? Are there any gaps, peaks, or dips?
 Output: Histogram of dates
 Why: To show periods of data collection, patterns in how it is collected, and if there are any gaps in the data collection process. 
@@ -38,18 +36,29 @@ Why: To see the range of grades given, and where most restaurants fall or cluste
 4. Which cities have the highest proportion of "Fail" outcomes or "High Risk" violations?
 Output: Bar Chart
 
-## [Individual] Explain why you chose your research question and what you plan to do with it
+###### Individual questions: 
 
 ### Gian
 
-my main research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
+my research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
 
 I may also be able to do geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
 
 My main visualizations will all be based on the map of Boston with the zipcode subsectors. I would like to do a density map with the amount of health code violations, as well as a map that categorizes each zipcode by the most common type of violation in for each zipcode (Dishwashing Facilities, Signage, Cross Contamination, Building Maintenance, etc) by color.
 
 ### Niki
+For my individual research question I will be looking at the month and season had the most food inspection for each city as well as overall across the 4 cities. 
+
+I may also look at whether certain types of violations (e.g., temperature issues, pests, hygiene) peak during specific seasons.
+
+I am interested in this research question because temperature, humidity, tourism, and staffing can fluctuate throughout the year, and I want to examine whether certain months or seasons are associated with higher numbers of food inspection violations. I also wanted to compare whether seasonal patterns are consistent across Boston, New York City, Chicago, and San Francisco, or whether each city has its own unique trends.
 
 ### Seun
 
 ### Arohi
+
+I will be looking at the trend of most frequent violations over time. Within each city, what are the most common violations over a 10 year period? Why would that be?
+
+I will additionally be looking at specifics of that question, like what the most common violations are in 2015 overall versus in 2020? Why may that be? 
+
+This was an individual question(s) I chose because I am interested in comparing and contrasting common violations not just within each city, but overall in comparison to one another. If one city has more violations with a specific kind of establishment (pizza restaurants, for example), is that a correlation to the amount/volume of those establishments in the area? Or do other cities also have violations for that establishment in the area and is that simply a common occurance for those establishments to have? 

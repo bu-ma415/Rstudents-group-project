@@ -48,6 +48,10 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# Geospatial Data for Boston
+Boston Shapefiles/
+
+
 #data source csv files
 data/
 
