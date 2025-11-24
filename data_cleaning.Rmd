@@ -117,7 +117,7 @@ df_boston <- df_boston |>
     inspection_date = as_date(inspection_date)
   ) |>
   rename(
-    inspection_id = inspection_id # Rename 'id' to 'inspection_id'
+    #inspection_id = inspection_id # Rename 'id' to 'inspection_id'
   ) |> 
   select(-id) # Drop the old 'id' column if it's still there
 
