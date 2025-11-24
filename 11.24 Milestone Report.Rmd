@@ -36,6 +36,8 @@ Why: To see the range of grades given, and where most restaurants fall or cluste
 4. Which cities have the highest proportion of "Fail" outcomes or "High Risk" violations?
 Output: Bar Chart
 
+NOTE: Our final code report will be in the Rstudents-group-project.md file, but for now, we have split our code between a data cleaning file and EDA file.
+
 ###### Individual questions: 
 
 ### Gian
