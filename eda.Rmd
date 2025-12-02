@@ -204,9 +204,9 @@ San Francisco: 94134, 94118
 
 ```{r}
 
-bos_insp <- inspections_clean <-
+bos_insp <- inspections |>
   filter(city_source == "Boston")
-bos_shp <- st_read("Boston Shapefiles/ZIP_Codes.shp")
+bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
 
 bos_borders <- bos_shp |> st_union() |>
   st_buffer(.5)
@@ -214,20 +214,19 @@ ggplot(bos_borders) +
   geom_sf(data=bos, aes(fill = ZIP5))
 
 
-# Density map of restaurants in each zipcode
+# Density map of restaurants per zipcode
 
 rstnt_density <- bos_insp |>
-  group_by(restaurant_name) |>
   group_by(zip_code) |>
-  mutate(n_per_zip = N())
+  summarize(n_restaurants = n_distinct(restaurant_name))
 
-bos$zip_code <- bos$ZIP5
+bos <- bos |>
+  rename(zip_code = ZIP5)
 
-bos -> full_join(rstnt_density, bos, by = zip_code)
+bos <- left_join(bos, rstnt_density, by = "zip_code")
 
 ggplot(bos_borders) +
-  geom_sf(data=bos, aes(fill_n_per_zip))
-
+  geom_sf(data=bos, aes(fill = n_restaurants))
 
 
 ```
