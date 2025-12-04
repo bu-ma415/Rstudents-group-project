@@ -1,0 +1,202 @@
+---
+title: "R Student Group Project Notebook"
+output: html_notebook
+---
+
+## Data Preparation 
+
+
+### 1. Load Data
+```{r Load Data}
+library(dplyr)     
+library(readr)     
+library(janitor)   # For cleaning column names
+library(stringr)   
+library(lubridate)
+
+# load the cities data 
+# add a column to each to denote what city the data is from
+df_boston <- read_csv("data/boston_inspections.csv") |>
+  mutate(city = "Boston")
+
+df_nyc <- read_csv("data/nyc_inspections.csv") |>
+  mutate(city = "New York")
+
+df_chicago <- read_csv("data/chicago_inspections.csv") |>
+  mutate(city = "Chicago")
+
+df_sf <- read_csv("data/sf_inspections.csv") |>
+  mutate(city = "San Francisco")
+
+# look through each dataset
+glimpse(df_boston)
+glimpse(df_nyc)
+glimpse(df_chicago)
+glimpse(df_sf)
+```
+
+### 2. Standardize Columns
+```{r Standardize Column Names}
+# Automatic clean-up w
+# turn "Inspection Date" into "inspection_date", "AKA Name" into "aka_name", etc.
+df_boston <- df_boston |> clean_names()
+df_nyc <- df_nyc |> clean_names()
+df_chicago <- df_chicago |> clean_names()
+df_sf <- df_sf |> clean_names()
+
+#checking column names
+#names(df_boston)
+#names(df_nyc)
+#names(df_chicago)
+#names(df_sf)
+
+#manual column editing for each city's dataset
+df_boston <- df_boston |>
+  rename(
+    restaurant_name = businessname,
+    inspection_date = resultdttm,      
+    violation_desc = violdesc,
+    risk_level = viol_level,           
+    address_full = address,
+    zip_code = zip,
+    location_string = location,
+    city_original = city,
+    city_source = city,              
+    state_original = state,
+  )
+
+df_nyc <- df_nyc |>
+  rename(
+    restaurant_name = dba,
+    # inspection_date is already good
+    violation_desc = violation_description,
+    risk_level = critical_flag,        
+    inspection_score = score,
+    zip_code = zipcode,
+    location_string = location,
+    city_original = boro,              # 'boro' is the original city-like column
+    city_source = city                 
+  )
+
+df_chicago <- df_chicago |>
+  rename(
+    restaurant_name = aka_name,        # 'aka_name' is better than 'dba_name'
+    # inspection_date is already good
+    violation_desc = violations,
+    risk_level = risk,                 
+    address_full = address,
+    zip_code = zip,
+    location_string = location,
+    city_original = city,              # This is the original "CHICAGO" column
+    state_original = state,
+    city_source = city_2               # This is the added "Chicago" column
+  )
+
+df_sf <- df_sf |>
+  rename(
+    restaurant_name = business_name,
+    # inspection_date is already good
+    violation_desc = violation_description,
+    risk_level = risk_category,        
+    inspection_score = inspection_score,
+    address_full = business_address,
+    zip_code = business_postal_code,
+    location_string = business_location,
+    city_original = business_city,
+    state_original = business_state,
+    latitude = business_latitude,         
+    longitude = business_longitude,     
+    city_source = city                
+  )
+
+# Unify Column Types 
+
+df_boston <- df_boston |>
+  mutate(
+    inspection_id = as.character(id), # Convert 'id' to character
+    inspection_date = as_date(inspection_date)
+  ) |>
+  rename(
+    inspection_id = inspection_id # Rename 'id' to 'inspection_id'
+  ) |> 
+  select(-id) # Drop the old 'id' column if it's still there
+
+df_nyc <- df_nyc |>
+  mutate(
+    inspection_date = mdy(inspection_date),
+    zip_code = as.character(zip_code)
+  )
+
+df_chicago <- df_chicago |>
+  mutate(
+    inspection_id = as.character(inspection_id),
+    inspection_date = mdy(inspection_date),
+    zip_code = as.character(zip_code)
+  )
+
+df_sf <- df_sf |>
+  mutate(
+    inspection_date = ymd_hms(inspection_date) |> as_date()
+  )
+```
+
+### 3. Combine Datasets
+```{r Combine Datasets}
+# Create a list of dataframes
+all_dfs <- list(df_boston, df_nyc, df_chicago, df_sf)
+
+# Bind them all together into one dataframe
+inspections_raw <- bind_rows(all_dfs)
+
+glimpse(inspections_raw)
+
+inspections_raw |> count(city_source)
+```
+
+
+### 4. Standardize Values 
+```{r Standardize Values}
+
+inspections_clean <- inspections_raw |>
+  # create one 'risk_level_standard' column
+  mutate(
+    risk_level_standard = case_when(
+      # Boston
+      risk_level == "***" ~ "High",
+      risk_level == "**"  ~ "Medium",
+      risk_level == "*"   ~ "Low",
+      
+      # NYC
+      risk_level == "Critical" ~ "High",
+      risk_level == "Not Critical" ~ "Low",
+      
+      # Chicago
+      str_detect(risk_level, "Risk 1") ~ "High",
+      str_detect(risk_level, "Risk 2") ~ "Medium",
+      str_detect(risk_level, "Risk 3") ~ "Low",
+      
+      # SF
+      str_detect(risk_level, "High") ~ "High",
+      str_detect(risk_level, "Moderate") ~ "Medium",
+      str_detect(risk_level, "Low") ~ "Low",
+      
+      # A default for NA or other values
+      TRUE ~ "Unknown" 
+    )
+  ) |>
+  # Make all names and descriptions lowercase and remove extra spaces
+  mutate(
+    restaurant_name = tolower(restaurant_name) |> str_squish(),
+    violation_desc = tolower(violation_desc) |> str_squish()
+  ) |>
+  # standardize zip codes with leading 0's
+  mutate(
+    zip_code = str_pad(zip_code, width = 5, side = "left", pad = "0")
+  ) 
+
+glimpse(inspections_clean)
+
+inspections_clean |> 
+  count(city_source, risk_level_standard, sort = TRUE)
+```
+
