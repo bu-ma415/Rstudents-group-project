@@ -37,8 +37,8 @@ inspections_over_time <- inspections |>
     )
   ) |>
   
-  # Filter out appropriate years due to 1900 "outlier" (no available data between 1900 and 2007)
-  filter(year >= 2007, year <= 2025)
+# Filter out appropriate years due to 1900 "outlier" (no available data between 1900 and 2007)
+filter(year >= 2007, year <= 2025)
 
 # Count violations per year and per category
 violation_trends <- inspections_over_time |>
