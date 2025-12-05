@@ -261,22 +261,6 @@ ggplot(inspections |> count(restaurant_name), aes(n)) +
 In the plot above we can see that are as the number of inspections increase the amount of restaraunts that have that many inspections decrease. This makes sense because if restaurants are consistently failing the food inspection most people won't want to eat their which would affect whether if the business can stay open or not.
 
 
-## Seasonality - months of the year with the highest inspection rates  
-```{r}
-inspections |> 
-  filter(inspection_date > "2007-01-01") |> # Filter out dates from 2007 since 1900-2007 are "outliers" and unfilled data
-  mutate(month = month(inspection_date, label = TRUE)) |>   # Pull months with highest inspection rates
-  count(month) |> 
-  
- # Plot 
-ggplot(aes(x = month, y = n)) + 
-  labs(title = "Inspections by Month", x = "Month", y = "Total Inspections") + geom_col
-```
-This bar graph shows that each month has a relatively high inspection volume per month, meaning inspections happen pretty consistently throughout each year. No major drop offs in each month shows that food inspections is a yearly occurrence and there is little to no seasonality, which makes sense because food inspections are intended to be scheduled stable and routinely. 
-
-February has the lowest count, which makes sense as it has the least amount of days out of any month. October has the highest number of inspections, which may be explained due to the start of fall (end of summer vacationing), end-of-year compliance, and/or consistent weather.
-
-
 ## Inspection coverage growing or shrinking? New restaurants inspected per year 
 
 ```{r}
@@ -290,4 +274,5 @@ inspections |>
 ggplot(aes(year, new_restaurants)) + geom_line() +
   labs(title = "Number of New Restaurants Inspected Each Year", x = "Year", y = "New Restaurants")
 ```
+
 We see the first massive spike in 2009 to 2010 in the number of new restaurants inspected between Boston, NYC, Chicago and SF. This makes sense because our context and earlier EDA showed that NYC and Chicago began formally writing their food inspection records around this period. For the rest of that decade, new restaurants inspected remained stable at ~15,000 per year. COVID-19 is represented in 2020 where inspections declined due to the shutdown. Post re-opening the economy in 2021 onwards, we can see a steady increase in new restaurants inspected.
