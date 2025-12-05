@@ -372,19 +372,36 @@ specific and see what the restaurant hotspots are in the city.
 
 # Group by all of the different restaurants, using addresses due to the fact that the same restaurant may be spelled slightly differently by different inspectors.
 
+bos_insp <- inspections |>
+  filter(city_source == "Boston")
+bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
+
+bos_borders <- bos |> st_union() |>
+  st_buffer(.5)
+
+###### ^^^^ Upload Shapefiles (same as EDA) ######
+
+
 ind_rsts <- bos_insp |>
   distinct(address_full, .keep_all = TRUE) |>
-  mutate(coords_clean= str_remove_all(location_string, "[()]"))|>
+  mutate(coords_clean = str_remove_all(location_string, "[()]"))|>
   separate(coords_clean, into = c("lat", "lon"), sep = ",", convert = T) |>
   mutate (
     lat = as.numeric(lat),
     lon = as.numeric(lon)
   ) |>
-  drop_na(lat,lon)
+  drop_na(lat,lon) |>
+  filter(
+    lat > 41, lat < 42.8,
+    lon >-71.8, lon < -70.7
+  ) |>
+  select(restaurant_name, address_full, lat, lon)
+
 
 coords_sf <- ind_rsts |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
   st_transform(26986)
+
 
 bos <- bos |> 
   st_transform(26986)
@@ -392,28 +409,33 @@ bos <- bos |>
 df_coords <- as.data.frame(st_coordinates(coords_sf))
 
 ggplot() +
-  geom_sf(data = bos, fill = NA, color = "white") +        # Boston polygons
   geom_density_2d_filled(
     data = df_coords,
     aes(X, Y, fill = ..level..),
-    alpha = 0.8
+    contour_var = "ndensity",
+    alpha = 0.8,
+    h = c(500, 500)
   ) +
-  scale_fill_viridis_d(option = "magma") +                # use discrete scale for ..level..
+  scale_fill_viridis_d(option = "magma") +            
   theme_minimal() +
-  labs(fill = "Restaurant Density")
+  labs(fill = "Restaurant Density") +
+  geom_sf(data = bos, fill = NA, color = "white", size = 0.05)
 
 ```
+
+As we can see, there are hotspots near Harvard Ave in Allston, the North
+End, Downtown Crossing, Chinatown, and Newbury St.
 
 Seeing this distribution, I'm wondering if there are differences between
 health code inspections for restaurants that are heavily clustered vs.
 restaurants that are lightly distributed in their area. We will call the
-former "Rural" restaurants and the latter "Urban" restaurants.
+former "Suburban" restaurants and the latter "Urban" restaurants.
 
-**Rural vs. Urban restaurants**
+**Suburban vs. Urban restaurants**
 
 To make this comparison, we will have to establish rules for what
 categorizes a restaurant as rural or urban. This will include all
-restuarants that were opened For this investigation, these will be the
+restaurants that were opened For this investigation, these will be the
 categories:
 
 Urban: Has more than or equal to \_\_ other restaurants within a \_\_
@@ -422,6 +444,21 @@ mile radius.
 Rural: Has less than \_\_ other restaurants within a \_\_ mile radius.
 
 ```{r urban}
+
+# Create circles around each rst
+
+buffer <- st_buffer(coords_sf$geometry, dist = 2)
+
+int <- st_intersects(buffer, coords_sf |> select(geometry))
+
+ 
+
+
+## st_buffer, style options (taken from rgeos gBuffer)
+
+# Attach nearby objects
+
+# Count how many row joins per buffer
 
 ```
 
