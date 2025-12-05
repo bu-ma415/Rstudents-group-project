@@ -1,7 +1,7 @@
 ---
 title: "11-24 Milestone"
 output: "Arohi, Seun, Gian, and Niki"
-date: "2025-11-17"
+date: "2025-11-24"
 ---
 
 # Project Description
@@ -36,19 +36,32 @@ Why: To see the range of grades given, and where most restaurants fall or cluste
 4. Which cities have the highest proportion of "Fail" outcomes or "High Risk" violations?
 Output: Bar Chart
 
+NOTE: Our final code report will be in the Rstudents-group-project.md file, but for now, we have split our code between a data cleaning file and EDA file.
+
 ###### Individual questions: 
 
 ### Gian
 
-my main research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
+my research questions have to do with spatial data within the city of Boston. Since the dataset includes zipcode and address for each restaurant, I thought it would be interesting to create a map that included each subsectors of the city (by zipcode) and investigate the differences and similarities between them.
 
 I may also be able to do geospatial computations that include distance between restaurants and other restaurants or reference points. This will all be done using the **sf** package.
 
 My main visualizations will all be based on the map of Boston with the zipcode subsectors. I would like to do a density map with the amount of health code violations, as well as a map that categorizes each zipcode by the most common type of violation in for each zipcode (Dishwashing Facilities, Signage, Cross Contamination, Building Maintenance, etc) by color.
 
 ### Niki
+For my individual research question I will be looking at the month and season had the most food inspection for each city as well as overall across the 4 cities. 
+
+I may also look at whether certain types of violations (e.g., temperature issues, pests, hygiene) peak during specific seasons.
+
+I am interested in this research question because temperature, humidity, tourism, and staffing can fluctuate throughout the year, and I want to examine whether certain months or seasons are associated with higher numbers of food inspection violations. I also wanted to compare whether seasonal patterns are consistent across Boston, New York City, Chicago, and San Francisco, or whether each city has its own unique trends.
 
 ### Seun
+
+My primary research question connects the type of restaurant to the type of violation to figure out if specific categories of restaurants disproportionately receive certain categories of violations.
+
+I will be looking at cuisine descriptions and violation descriptions and analyzing their phrases. 
+
+I am interested in this question because it explores whether a restaurant's business model or the food it serves creates a predisposition for specific health code failures. For example, are restaurants serving raw fish (like sushi) more likely to receive "improper food temperature" violations? Are bakeries, which use large amounts of dry goods, more prone to "pest" violations?
 
 ### Arohi
 
