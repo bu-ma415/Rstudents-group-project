@@ -393,7 +393,7 @@ ind_rsts <- bos_insp |>
   drop_na(lat,lon) |>
   filter(
     lat > 41, lat < 42.8,
-    lon >-71.8, lon < -70.7
+    lon > -71.8, lon < -70.7
   ) |>
   select(restaurant_name, address_full, lat, lon)
 
@@ -438,27 +438,54 @@ categorizes a restaurant as rural or urban. This will include all
 restaurants that were opened For this investigation, these will be the
 categories:
 
-Urban: Has more than or equal to \_\_ other restaurants within a \_\_
-mile radius.
+[Urban:]{.underline} Has more than or equal to **40** other restaurants
+within a **100 meter** radius.
 
-Rural: Has less than \_\_ other restaurants within a \_\_ mile radius.
+[Suburban:]{.underline} Has less than **40** other restaurants within a
+**100 meter** radius.
 
 ```{r urban}
 
 # Create circles around each rst
 
-buffer <- st_buffer(coords_sf$geometry, dist = 2)
+buffer <- st_buffer(coords_sf$geometry, dist = 100)
 
 int <- st_intersects(buffer, coords_sf |> select(geometry))
 
- 
-
-
-## st_buffer, style options (taken from rgeos gBuffer)
-
-# Attach nearby objects
-
 # Count how many row joins per buffer
+
+n_int <- lengths(int)
+
+# I want the index of all of the restaurants that have more than x amount of restaurants in this radius
+
+ind_rsts <- ind_rsts |>
+  mutate(
+    n_neighbor = n_int - 1,
+    urban_yn = (n_int - 1) >= 10
+  )
+
+ind_rsts <- st_as_sf(ind_rsts, coords = c("lon", "lat"), crs = 4326)
+
+mean(ind_rsts$urban_yn)
+hist(ind_rsts$n_neighbor)
+
+# Now lets plot all of the restaurants with their new designations
+
+ggplot() +
+  geom_sf(data = ind_rsts,
+          aes(color = urban_yn),
+          size = 1,
+          alpha = 0.2) +
+  geom_sf(data = bos, fill = NA, color = "black") +
+  labs(
+    title = "All Restaurants Colored By Urban Designation",
+    color = ""
+  ) +
+  scale_color_discrete(
+    labels = c("TRUE" = "Urban", "FALSE" = "Suburban")
+  )
+
+
 
 ```
 
@@ -467,14 +494,110 @@ int <- st_intersects(buffer, coords_sf |> select(geometry))
 Now that we've designated each restaurant as Urban or Rural, we can run
 some hypothesis tests.
 
-Do rural or urban restaurants have more failed health inspections? Is
+Do urban or suburban restaurants have more failed health inspections? Is
 this difference significant?
 
-```{r}
+```{r chisq}
+
+#Expand individual restaurants and their urban/suburban designation to the full inspection report
+
+new_bos_insp <- bos_insp |>
+  left_join(
+    ind_rsts |>
+      st_drop_geometry() |>
+      select(address_full, urban_yn, n_neighbor),
+    by = "address_full"
+  ) |>
+  filter(
+    !if_any(c(urban_yn,viol_status), ~is.na(.))
+  )
+
+
+library("janitor")
+
+new_bos_insp |>
+  tabyl(urban_yn, viol_status) |>
+  adorn_totals("row") |>
+  adorn_percentages("row") |>
+  adorn_pct_formatting(digits = 1)
+
+
+chisq.test(table(new_bos_insp$viol_status, new_bos_insp$urban_yn))
+
 
 ```
 
-Do rural or urban restaurants
+This proportion table with marginal proportions shows us that Pass Rate
+for Urban restaurants is 0.8% higher than for Suburban restaurants. This
+means that suburban restaurants tend to fail health inspections more
+often than urban restaurants.
+
+To see whether this result is significant, we can conduct a Chi-Squared
+Test for independence. These are the assumptions:
+
+-   Both Urban/Suburban status and Pass/Fail reports must be categorical
+    variables with 2+ distinct groups
+
+-   Categories withineach designation must be mutually exclusive.
+
+-   Each health inspection report must be independent of the others.
+
+-   There must be more than 5 reports in each of the 4 categories.
+
+With a p-value of 6.969x10\^-10, we can reject the null hypothesis that
+the categories are independent from each another. [We have evidence that
+Urban/Suburban designation and health inspection pass rates are
+dependent on one another.]{.underline}
+
+Now we want to know the specific relationship between Urban/Suburban
+designation and Pass/Fail rates, if any.
+
+```{r logit}
+
+# Lets start by deconstructing the pass/fail rate into number of neighbor restaurants within a 400 meter radius, plotting the distribution
+
+ggplot() +
+  geom_histogram(data = ind_rsts, aes(x=n_neighbor), bins=39) +
+  labs(title = "Histogram of Neighbor Restaurants Within a 100 Meter Radius",
+       x = "Number of Neighbors",
+       y = "Frequency")
+
+# This distribiution is unimodal and smooth. Let's see if we can fit a logistic regression to this.
+
+new_bos_insp <- new_bos_insp |>
+  mutate(
+    viol_status = viol_status == "Fail",
+    viol_status_num = as.numeric(viol_status)
+  )
+
+model <- glm(viol_status ~ n_neighbor, data = new_bos_insp, family = binomial)
+
+
+grid <- tibble(
+  n_neighbor = seq(
+    min(new_bos_insp$n_neighbor),
+    max(new_bos_insp$n_neighbor),
+    length.out = 300
+  ))
+
+
+grid <- grid |>
+  mutate(
+    pred_prob = predict(model, newdata = grid, type = "response")
+  )
+
+  
+ggplot() +
+  geom_jitter(data = new_bos_insp,
+              aes(x = n_neighbor, y = viol_status_num),
+              height = 0.1, alpha = 0.2) +
+  geom_line(data = grid,
+            aes(x = n_neighbor, y = pred_prob),
+            linewidth = 1.2)
+
+```
+
+The log-odds equation for this relationship is:
 
 ## Seun's Analysis
 
