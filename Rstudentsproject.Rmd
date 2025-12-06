@@ -521,8 +521,11 @@ ggplot(violation_trends, aes(x = year, y = count, color = violation_category, gr
   geom_point(data = most_frequent_by_year, aes(x = year, y = count)) + 
   scale_color_viridis_d(option = "C") + 
   scale_y_continuous(labels = comma) + 
-  scale_x_continuous(breaks = unique(violation_trends$year), expand = expansion(mult = c(0.02, 0.05))) + 
-  labs(title = "Trends in Most Frequent Violation Categories Over Time", x = "Year", y = "Number of Violations", color = "Violation Category") + 
+  scale_x_continuous(
+    breaks = seq(2007, 27025, by = 2),    # scale years every two years to avoid overlap
+    labels = seq(2007, 2025, by = 2)
+  ) +
+  labs(title = "Trends in Most Frequent Violation Categories Over Time", x = "Year", y = "Number of Violations", color = "Violation Category") +
   theme_minimal()
 ```
 We can see that Other is the largest category for most frequent violations per year consistently since the data has been tracked. This makes sense because the tracking methodology is not universal between Boston, NYC, Chicago, and SF, as we found in our EDA, so Other encapsulates all the data inspections unmarked by the categories included.
@@ -567,10 +570,12 @@ violation_compare_all <- inspections_over_time |>
   summarise(count = n(), .groups = "drop")
 
 # Plot 
-ggplot(violation_compare_all, aes(x = violation_category, y = count, fill = factor(year))) + geom_col(position = "dodge") +
+ggplot(violation_compare_all, aes(x = violation_category, y = count, fill = factor(year))) +
+  geom_col(position = "dodge") +
   scale_fill_viridis_d() +
   labs(title = "Violation Categories in 2015 vs 2020", x = "Violation Category", y = "Count", fill = "Year") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Calculating which violations grew the most in 2015 vs 2020
 violation_diff <- violation_compare_all |>
@@ -615,12 +620,14 @@ Restaurants under the "Fail" severity category had the second highest count, whi
 # How does the composition of all violations change year over year? 
 
 # Plot 
-ggplot(violation_trends, aes(x = factor(year), y = count, fill = violation_category)) + geom_bar(stat = "identity") + 
+ggplot(violation_trends,aes(x = factor(year), y = count, fill = violation_category)) +
+  geom_bar(stat = "identity") + 
   scale_fill_viridis_d(option = "C") + 
   labs(title = "Violation Category Composition by Year", x = "Year", y = "Total Violations", fill = "Category") + 
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-The composition of violations has been relatively steady over the past couple years. This means that over time, the Other category has consistently had the highest proportion of food inspection violations compared to the other categories, with the exception of 2020 when COVID-19 started and 2021 as it continued. Sanitation & Cleaning has had the second highest share proportionally, meaning these two categories are prominent in the food violation inspection space. The Cross-Contamination, Employee Hygiene, Facility/Maintenance, and Pest Control categories have consistently taken up the least amount of shares of food inspection violations over the years.
+The composition of violations has been relatively steady over the past couple years. This means that over time, each category has sat in about the same place proportionally to the other categories.The Other category has consistently had the highest proportion of food inspection violations compared to the other categories, with the exception of 2020 when COVID-19 started and 2021 as it continued. Sanitation & Cleaning has had the second highest share proportionally, meaning these two categories are prominent in the food violation inspection space. The Cross-Contamination, Employee Hygiene, Facility/Maintenance, and Pest Control categories have consistently taken up the least amount of shares of food inspection violations over the years.
 
 ```{r q6 - Inspection volume over time per city}
 # Filter date to count inspection volume over time per city 
@@ -643,6 +650,7 @@ In our EDA, we looked at distribution of inspections over time, but not the volu
 ggplot(most_frequent_by_year, aes(x = factor(year), y = count, fill = violation_category)) + geom_col() + 
   scale_fill_viridis_d(option = "C") + 
   labs(title = "Top Violation (Other) Total Count Each Year", x = "Year", y = "Number of Violations", fill = "Top Category") + 
-  theme_minimal()
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 Broken down by year, we can see the leading category in most common violation inspections (which is Other) has been an increasing trend for the past couple years. This has been consistent over the past two decades, with the exception of 2020's effect of COVID-19. The unproportional rise in 2021 and 2022 is explained by the return of the economy post COVID-19, where restaurants and businesses began to reopen in society.
