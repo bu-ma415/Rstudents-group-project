@@ -542,7 +542,6 @@ ggplot(seasonal_count, aes(x = season, y = count)) +
 ```
 
 
-
 ### By City Season Analysis
 ```{r}
 # Food Inspection Violations by Season for each city
