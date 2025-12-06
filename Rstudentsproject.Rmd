@@ -15,6 +15,7 @@ library(lubridate)
 library(tidytext)
 library(scales)
 library(viridis)
+library(ggplot2)
 
 # Load the single, final clean file
 inspections <- read_csv("data/inspections_clean.csv")
@@ -462,3 +463,191 @@ Our analysis confirms two critical relationships:
 
 1.  **Business Model Risk:** The type of cuisine a restaurant serves creates a unique "fingerprint" of health risks (Q1). Complex cooking (Restaurant General) correlates with **Food Temperature** issues, while high-volume raw preparation (Sushi/Deli) correlates with **Pest Control** and **Cross-Contamination**.
 2.  **Inspection Type Bias:** Public complaints (Q2) are highly effective at flagging immediate public health threats, demonstrating a higher proportional incidence of **High Risk** violations and **Pest Control** problems compared to routine inspections.
+
+
+## Niki's Analysis
+### Overall Monthly analysis
+```{r}
+# Categorizing the different inspections for later analysis
+inspections_cat <- inspections |>
+  mutate(
+    violation_category = case_when(
+      str_detect(violation_desc, "mice|rodent|droppings|insects|pests|harborage") ~ "Pest Control",
+      str_detect(violation_desc, "temperature|cool|hot-holding|cold-holding|refrigerat") ~ "Food Temperature",
+      str_detect(violation_desc, "wash|sanitiz|clean|wiping cloths|dishwashing") ~ "Sanitation & Cleaning",
+      str_detect(violation_desc, "hand wash|hygiene|no hair|bare hand") ~ "Employee Hygiene",
+      str_detect(violation_desc, "contaminat|cross-contamination|raw|covered|protect") ~ "Cross-Contamination",
+      str_detect(violation_desc, "floor|wall|ceiling|plumbing|ventilation|garbage") ~ "Facility/Maintenance",
+      TRUE ~ "Other"
+    )
+  )
+# Adding columns that tell me the month and what season that month correlates to
+monthly_season <- inspections_cat|>
+  mutate(month = month(inspection_date), season = case_when(
+      month %in% c(12, 1, 2) ~ "Winter",
+      month %in% c(3, 4, 5) ~ "Spring",
+      month %in% c(6, 7, 8) ~ "Summer",
+      month %in% c(9, 10, 11) ~ "Fall"
+    )
+    )|>
+  filter(!is.na(month))
+
+# Food Inspection Violations by Month over all cities
+month_count <- monthly_season|>
+  group_by(month)|>
+  summarise(count = n())
+
+ggplot(month_count, aes(x = factor(month), y = count)) +
+  geom_col(fill = "steelblue")+
+  labs(
+    title = "Food Inspection Violations by Month over all cities",
+    x = "Month",
+    y = "Number of Violations"
+  )
+
+
+```
+### By City Montly Analysis
+```{r}
+# Food Inspection Violations by Month for each city
+monthly_city_count <- monthly_season|>
+  group_by(city_source, month)|>
+  summarise(count = n())
+
+ggplot(monthly_city_count) +
+  geom_line(aes(x = month, y = count, color = city_source)) +
+  scale_x_continuous(breaks = 1:12)+
+  labs(
+    title = "Food Inspection Violations by Month for each city",
+    x = "Month",
+    y = "Number of Violations"
+  )
+```
+For this part of the analysis, we are looking at which months food violations tend to peak.The first plot shows the distribution of food inspection violations across all cities over the course of the year. Violations tend to peak in March and October, with October having the highest total number of violations. The second plot breaks the data down by city. Each city follows a similar pattern, with peaks in March and October, consistent with the overall trend observed in the first plot.
+
+### Overall Seasonal Analysis
+```{r}
+# Food Inspection Violations by Seasons over all cities
+seasonal_count <- monthly_season|>
+  group_by(season)|>
+  summarise(count = n())
+ggplot(seasonal_count, aes(x = season, y = count)) +
+  geom_col(fill = "steelblue")+
+  labs(
+    title = "Food Inspection Violations by Seasons over all cities",
+    x = "Seasons",
+    y = "Number of Violations"
+  )
+
+```
+
+
+
+### By City Season Analysis
+```{r}
+# Food Inspection Violations by Season for each city
+seasonal_city_count <- monthly_season|>
+  group_by(city_source, season)|>
+  summarise(count = n())
+
+ggplot(seasonal_city_count, 
+       aes(x = season, y = count, fill = city_source)) +
+  geom_col() +
+  facet_wrap(~ city_source, nrow = 2) + 
+  scale_y_continuous(labels = comma) + 
+  labs(
+    title = "Food Inspection Violations by Season for each city",
+    x = "Season",
+    y = "Number of Violations"
+  )
+```
+For this part of the analysis, we are looking at which seasons food violations tend to peak. In the third plot, it shows the distribution of food inspection violations across all cities over the seasons. Violations tend to peak in spring with fall being season with the second most amount of food violations. The fourth plot breaks it down by city. Each city follows a similar pattern, with spring being the season with the most violations, consistent with the overall trend observed in the first plot.
+
+
+```{r}
+# Top 3 Violations by season overall
+top3_seasonal <- monthly_season |>
+  filter(violation_desc %in% top_violations$violation_desc) |>
+  group_by(violation_desc, season) |>
+  summarise(count = n(), .groups = "drop")|>
+  mutate(
+    violation_short = case_when(
+      violation_desc == "non-food contact surfaces clean" ~ "Non-Food Surfaces Dirty",
+      
+      violation_desc == "improper maintenance of walls/ceilings" ~ "Walls & Ceilings Damage",
+      
+      violation_desc == "non-food contact surface or equipment made of unacceptable material, not kept clean, or not properly sealed, raised, spaced or movable to allow accessibility for cleaning on all sides, above and underneath the unit." 
+        ~ "Non-Food Equipment Unclean",
+
+      TRUE ~ violation_desc
+    ),
+    violation_short = factor(
+      violation_short,
+      levels = c(
+        "Non-Food Surfaces Dirty",
+        "Walls & Ceilings Damage",
+        "Non-Food Equipment Unclean"
+      )
+    )
+  )
+
+ggplot(top3_seasonal,
+       aes(x = season, y = count, fill = season)) +
+  geom_col() +
+  facet_wrap(~ violation_short, scales = "free_y", nrow = 2) +
+  labs(
+    title = "Seasonal Distribution of Top 3 Violations",
+    x = "Season",
+    y = "Number of Violations"
+  )
+```
+The above plot displays the distribution of each violation over the different seasons. For all three violations spring has the overall most violations with fall being the second season with the most violations. This, similarly to the plots showing the distribution of each violation over the course of the year, suggests possible seasonal effects on inspection results or restaurant practices.  
+
+```{r}
+monthly_violation_counts <- monthly_season|>
+  filter(!is.na(season),!is.na(violation_category))|>
+  group_by(violation_category, month)|>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(monthly_violation_counts,
+       aes(x = month, y = count, group = violation_category)) +
+  geom_line(linewidth = 1.2, color = "steelblue") +
+  geom_point() +
+  facet_wrap(~ violation_category, scales = "free_y", nrow = 3) +
+  scale_x_continuous(breaks = 1:12) +
+  theme(
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    title = "Monthly Trends for Each Violation Category",
+    x = "Month",
+    y = "Number of Violations"
+  )
+
+```
+After examining overall and city-level monthly and seasonal trends, we analyzed each violation category separately to determine when different types of violations tend to peak. The figure shows that most categories reach their highest levels in October, suggesting a strong fall seasonal effect across multiple types of food safety risks.
+
+An important exception is Employee Hygiene, which peaks in April rather than October. This may reflect seasonal staffing changes, onboarding of new employees in the spring, or changes in enforcement focus. Overall, this suggests that while many violations follow a common seasonal pattern, some categories exhibit distinct timing, which could be useful for targeted inspections and interventions.
+
+```{r}
+season_violation_counts <- monthly_season|>
+  filter(!is.na(season),!is.na(violation_category))|>
+  group_by(violation_category, season)|>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(season_violation_counts,
+       aes(x = season, y = count, fill = season)) +
+  geom_col() +
+  facet_wrap(~ violation_category, scales = "free_y", nrow = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(
+    title = "Seasonal Distribution for Each Violation Category",
+    x = "Season",
+    y = "Number of Violations"
+  )
+
+
+```
+The figure above shows the distribution for each violation category during each season. The figure shows that most categories reach their highest levels in spring, which is interesting to note as the monthly breakdown showed that most of the violations peaked in month of October. This suggests that even though the most violation occur in October, violations build up during the spring time.
+
+An important exception is Pest Control and Food Temperatrure. Pest control violations peak in the fall, likely because colder outdoor temperatures drive rodents and insects indoors, increasing the risk of infestations in food establishments. Food temperature violations remain relatively consistent across seasons, with a slight increase in the winter, which may be related to increased reheating practices and greater reliance on hot food holding during colder months. Overall, these trends suggest that food safety risks fluctuate seasonally and differently by violation type, reinforcing the importance of timing inspections to periods of elevated risk.
