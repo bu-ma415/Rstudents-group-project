@@ -289,11 +289,7 @@ top_bigrams |>
   coord_flip() +
   scale_y_continuous(labels=label_number(scale = 1/1000, suffix = "k")) +
   labs(
-<<<<<<< HEAD
     title = "Top 20 Specific Violation Phrases (Aggregated Sample)",
-=======
-    title = "Top 30 Specific Violation Phrases (Aggregated Sample)",
->>>>>>> ed62129de70894c432dbb8845e440a5804cb2159
     x = "Violation Phrase",
     y = "Total Count"
   )
