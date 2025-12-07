@@ -260,7 +260,10 @@ San Francisco: 94134, 94118
 
 
 bos_insp <- inspections |>
-  filter(city_source == "Boston")
+  filter(city_source == "Boston") |>
+  mutate(zip_code = sub("-.*$", "", zip_code))
+
+
 bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
 
 bos_borders <- bos |> st_union() |>
@@ -271,17 +274,20 @@ ggplot(bos_borders) +
 
 # Density map of restaurants per zipcode
 
-rstnt_density <- bos_insp |>
-  group_by(zip_code) |>
-  summarize(n_restaurants = n_distinct(restaurant_name))
 
+rstnt_density <- bos_insp |>
+  filter(!str_detect(location_string, regex("34\\."))) |>
+  group_by(zip_code) |>
+  summarize(n_restaurants = n_distinct(address_full))
+  
 bos <- bos |>
   rename(zip_code = ZIP5)
 
 bos_joined <- left_join(bos, rstnt_density, by = "zip_code")
 
 ggplot(bos_borders) +
-  geom_sf(data=bos_joined, aes(fill = n_restaurants))
+  geom_sf(data=bos_joined, aes(fill = n_restaurants)) +
+  labs(fill = "Number of Restaurants")
 ```
 
 There are 43 zip codes in the City of Boston. The
@@ -408,18 +414,38 @@ bos <- bos |>
 
 df_coords <- as.data.frame(st_coordinates(coords_sf))
 
+my_labels <- c(
+  "0 Neighbors",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "70 Neighbors"
+)
+
 ggplot() +
   geom_density_2d_filled(
     data = df_coords,
     aes(X, Y, fill = ..level..),
     contour_var = "ndensity",
     alpha = 0.8,
-    h = c(500, 500)
+    h = c(500, 500),
+    clip = "on"
   ) +
-  scale_fill_viridis_d(option = "magma") +            
+  scale_fill_viridis_d(option = "mako",
+                       direction = -1,
+                       labels = my_labels) +   
   theme_minimal() +
-  labs(fill = "Restaurant Density") +
-  geom_sf(data = bos, fill = NA, color = "white", size = 0.05)
+  labs(title = "City of Boston Restaurant Hotspot Map",
+       fill = "Density Scale") +
+  geom_sf(data = bos, fill = NA, color = "black", size = 0.05) +
+  theme(panel.background = element_rect(fill = "#DEF5E5FF"),
+        axis.text = element_blank(),
+        theme(axis.title = element_blank()))
 
 ```
 
@@ -438,10 +464,10 @@ categorizes a restaurant as rural or urban. This will include all
 restaurants that were opened For this investigation, these will be the
 categories:
 
-[Urban:]{.underline} Has more than or equal to **40** other restaurants
+[Urban:]{.underline} Has more than or equal to **10** other restaurants
 within a **100 meter** radius.
 
-[Suburban:]{.underline} Has less than **40** other restaurants within a
+[Suburban:]{.underline} Has less than **10** other restaurants within a
 **100 meter** radius.
 
 ```{r urban}
@@ -475,7 +501,7 @@ ggplot() +
   geom_sf(data = ind_rsts,
           aes(color = urban_yn),
           size = 1,
-          alpha = 0.2) +
+          alpha = 0.3) +
   geom_sf(data = bos, fill = NA, color = "black") +
   labs(
     title = "All Restaurants Colored By Urban Designation",
@@ -572,6 +598,7 @@ new_bos_insp <- new_bos_insp |>
 
 model <- glm(viol_status ~ n_neighbor, data = new_bos_insp, family = binomial)
 
+coef(model)
 
 grid <- tibble(
   n_neighbor = seq(
@@ -594,6 +621,10 @@ ggplot() +
   geom_line(data = grid,
             aes(x = n_neighbor, y = pred_prob),
             linewidth = 1.2)
+
+ # curve <- 1/(1+e^-(0.225-0.00126*x))
+
+
 
 ```
 
