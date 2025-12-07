@@ -283,6 +283,7 @@ top_bigrams <- all_segment_counts |>
 
 # Plot the top 20
 top_bigrams |>
+<<<<<<< HEAD
   slice_head(n = 20) |>
   ggplot(aes(x = reorder(bigram, n), y = n)) +
   geom_col() +
@@ -290,6 +291,14 @@ top_bigrams |>
   scale_y_continuous(labels=label_number(scale = 1/1000, suffix = "k")) +
   labs(
     title = "Top 20 Specific Violation Phrases (Aggregated Sample)",
+=======
+  slice_head(n = 30) |>
+  ggplot(aes(x = reorder(bigram, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Top 30 Specific Violation Phrases (Aggregated Sample)",
+>>>>>>> 79dc27214b807b2dc70863fb51750d7ee79d5cae
     x = "Violation Phrase",
     y = "Total Count"
   )
