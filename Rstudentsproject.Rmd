@@ -108,7 +108,7 @@ This analysis validates our standardization and proves that the two scoring syst
 
 # Create a summary table
 fails_by_year <- inspections |>
-  filter(inspection_date > "2000-01-01") |> # filter out 'bad' dates
+  filter(inspection_date > "2000-01-01") |> # filter out outlier (probably wrong) dates
   mutate(year = year(inspection_date)) |>
   group_by(city_source, year) |>
   summarize(
@@ -122,12 +122,12 @@ ggplot(fails_by_year, aes(x = year, y = fail_rate, color = city_source)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
   scale_y_continuous(labels = label_percent()) +     # format y-axis as percentage
-  scale_color_viridis_d() +                         # add better colors
+  scale_color_viridis_d() +                         
   labs(
     title = "Fail Rate Over Time by City", 
-    y = "Proportion of Fails",                      # <-- Fix y-axis label
+    y = "Proportion of Fails",                      
     x = "Year",
-    color = "City"                                  # <-- Fix legend title
+    color = "City"                                  
   )
 
 # Least Successful zipcodes in each city in the dataset
@@ -138,17 +138,15 @@ fails_by_zip <- inspections |>
     fail_rate = mean(inspection_outcome == "Fail", na.rm = TRUE),
     total_inspections = n()
   ) |>
-  filter(total_inspections > 100) |> # Only include zips with 100+ inspections
+  filter(total_inspections > 100) |> # Only include zips with over 100 inspections for points with depth
   ungroup()
 
 # Summary table for zip codes
 fails_by_zip |>
   group_by(city_source) |>      # Group by city
-  top_n(3, fail_rate) |>        # Find the top 3 *within* that city
+  top_n(3, fail_rate) |>        # Find the top 3 in each city
   ungroup() |>
-  
-  # This 'reorder_within' is a special trick to make facets work
-  mutate(
+    mutate(
     zip_code = tidytext::reorder_within(zip_code, fail_rate, city_source)
   ) |>
 
@@ -207,7 +205,6 @@ ggplot(bos_borders) +
 
 
 # Density map of restaurants in each zipcode
-
 rstnt_density <- bos_insp |>
   group_by(restaurant_name) |>
   group_by(zip_code) |>
@@ -403,23 +400,18 @@ inspections_categorized |>
 ```{r Plot Severity by Inspection Type}
 
 inspections_categorized |>
-  # 1. Filter the data (No changes needed here)
   filter(
     inspection_type_standard %in% c("Routine", "Complaint"),
     risk_level_standard != "Unknown"
-  ) |> # <--- PIPE TO THE NEXT STEP
-  
-  # 2. Mutate (Convert to Factor)
-  mutate(
+  ) |>
+    mutate(
     risk_level_standard = factor(
       risk_level_standard, 
       # Set the desired hierarchical order
       levels = c("High", "Medium", "Low"),
       ordered = TRUE
     )
-  ) |> # <--- CORRECT PIPE PLACEMENT (Outside the final mutate parenthesis)
-  
-  # 3. Plot proportions
+  ) |>
   ggplot(aes(x = inspection_type_standard, fill = risk_level_standard)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::label_percent()) +
@@ -441,8 +433,6 @@ inspections_categorized |>
     inspection_type_standard %in% c("Routine", "Complaint"),
     violation_category != "Other" # Remove 'Other' violations
   ) |>
-  
-  # Plot proportions
   ggplot(aes(x = inspection_type_standard, fill = violation_category)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::label_percent()) +
@@ -453,7 +443,7 @@ inspections_categorized |>
     y = "Proportion of Violations",
     fill = "Violation Category"
   ) +
-  coord_flip() # Flip axes to make categories easier to read
+  coord_flip() # Flipped axes to make categories easier to read
 ```
 
 When looking at violation type, Complaint inspections are disproportionately focused on Pest Control and Food Temperature issues. In contrast, Routine inspections find a much higher proportion of Sanitation & Cleaning and Facility/Maintenance problems. This suggests that patrons are quick to report visible signs of pests or temperature issues, while inspectors find more structural/hygiene problems during unannounced, comprehensive checks.
