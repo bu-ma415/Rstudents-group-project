@@ -218,32 +218,6 @@ ggplot(bos_borders) +
   geom_sf(data=bos, aes(fill_n_per_zip))
 ```
 
-There are 43 zip codes in the City of Boston
-
-### Top Violations Overall
-
-```{r Top Violations Overall}
-top_bigrams <- inspections |>
-  sample_frac(0.5) |>  # Taking a 50% random sample to reduce memory load
-  filter(!is.na(violation_desc)) |>
-  unnest_tokens(bigram, violation_desc, token = "ngrams", n = 2) |>
-  count(bigram, sort = TRUE)
-
-# Plot the top 20
-top_bigrams |>
-  top_n(20) |>
-  ggplot(aes(x = reorder(bigram, n), y = n)) +
-  geom_col() +
-  coord_flip() +
-  labs(
-    title = "Top 20 Most Common Violation Phrases (50% Sample)",
-    x = "Violation Phrase (Bigram)",
-    y = "Total Count"
-  )
-```
-
-This plot, despite successfully processing the text, shows that the most common phrases across all cities are generic, high-frequency functional words like 'food contact' and 'non food'. We do not see specific issues like 'rodent' or 'improper temperature' in the top 20, confirming that these key issues are diluted by common, general phrases. This validates our next step to use manual keyword searching to group thousands of unique violations into meaningful categories.
-
 ### Days of the week that see the most inspections
 
 ```{r Inspections by Day of Week}
@@ -272,6 +246,57 @@ The long, flat tail on the right is highly significant. While most businesses ar
 ## Answering Research Questions
 
 ## Seun's Analysis 
+
+### Top Violation Phrases
+
+```{r Top Violation Phrases}
+get_bigram_counts <- function(data_chunk) { 
+  data_chunk |>
+  filter(!is.na(violation_desc)) |>
+  unnest_tokens(bigram, violation_desc, token = "ngrams", n = 2) |>
+  separate(bigram, c("word1", "word2"), sep = " ") |> # separates the bigram into two columns for filtering
+  anti_join(stop_words, by = c("word1" = "word")) |> # removing 'stop words' for more meaningful analysis
+  anti_join(stop_words, by = c("word2" = "word")) |>
+  unite(bigram, word1, word2, sep = " ") |>
+  count(bigram, sort = TRUE)
+}
+
+#partitioning data into 10 chunks for faster processing time
+all_segment_counts <- list()
+num_segments <- 10
+sample_fraction <- 0.1
+for (i in 1:num_segments) {
+  message(paste("Processing Segment", i, "of", num_segments))
+    data_segment <- inspections |>
+    sample_frac(sample_fraction)
+    segment_result <- get_bigram_counts(data_segment)
+    all_segment_counts[[i]] <- segment_result
+}
+
+top_bigrams <- all_segment_counts |>
+  bind_rows() |>
+  group_by(bigram) |>
+  summarize(n = sum(n), .groups = "drop") |>
+  arrange(desc(n))
+
+#head(top_bigrams, 10)
+
+# Plot the top 20
+top_bigrams |>
+  slice_head(n = 20) |>
+  ggplot(aes(x = reorder(bigram, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels=label_number(scale = 1/1000, suffix = "k")) +
+  labs(
+    title = "Top 20 Specific Violation Phrases (Aggregated Sample)",
+    x = "Violation Phrase",
+    y = "Total Count"
+  )
+
+```
+The chart reveals that the most frequent violations found by inspectors are not specific health emergencies but rather structural, maintenance, and facility compliance issues. The most frequent phrases are too broad to be actionable (like "food contact"). This proves that you must group them into high-level categories (Sanitation, Pest Control, etc.) to get meaningful insights. The consistent appearance of "food contact," "contact surfaces," and "surfaces clean" hints that general Sanitation & Cleaning may be the single largest category of violation by count, regardless of the city or inspection type.
+
 ### Categorize Violations
 ```{r Categorize Violations}
 inspections_categorized <- inspections |>
