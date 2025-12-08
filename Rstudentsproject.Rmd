@@ -19,6 +19,7 @@ library(lubridate)
 library(tidytext)
 library(scales)
 library(viridis)
+library(ggplot2)
 
 # Load the single, final clean file
 inspections <- read_csv("data/inspections_clean.csv")
@@ -848,6 +849,7 @@ unannounced, comprehensive checks.
 
 Our analysis confirms two critical relationships:
 
+<<<<<<< HEAD
 1.  **Business Model Risk:** The type of cuisine a restaurant serves
     creates a unique "fingerprint" of health risks (Q1). Complex cooking
     (Restaurant General) correlates with **Food Temperature** issues,
@@ -857,3 +859,349 @@ Our analysis confirms two critical relationships:
     effective at flagging immediate public health threats, demonstrating
     a higher proportional incidence of **High Risk** violations and
     **Pest Control** problems compared to routine inspections.
+=======
+1.  **Business Model Risk:** The type of cuisine a restaurant serves creates a unique "fingerprint" of health risks (Q1). Complex cooking (Restaurant General) correlates with **Food Temperature** issues, while high-volume raw preparation (Sushi/Deli) correlates with **Pest Control** and **Cross-Contamination**.
+2.  **Inspection Type Bias:** Public complaints (Q2) are highly effective at flagging immediate public health threats, demonstrating a higher proportional incidence of **High Risk** violations and **Pest Control** problems compared to routine inspections.
+
+
+## Arohi's question and analysis
+
+For my analysis, I am focusing on time-series data. As we saw in our Exploratory Data Analysis (EDA), the data is relatively recent, tracing back to around 2005 onwards, which works well for inspecting modern trends.
+
+My specific questions focuses on the trend of most frequent violations over time. A further expansion of that will lead into looking at the effect of environmental circumstances (such as COVID-19, for example, and what the trends might look like between inspection categories for 2015 vs 2020) on the frequency and distribution of food inspection violations, the severity of violations (by assigning severity into categories in the dataset, such as Fail, Closed, etc), composition of violations over time, and more.
+
+Time-series data is particularly interesting to our study because knowing the trends of violations year over year helps us determine its significance. It can help us deduce whether a violation is random or if its consistency year over year means that it is an overall global problem needed to be solved, which answers our original motivation for our group focusing on food inspection violations and continues our EDA findings.
+
+```{r q1 - Most frequent violations per year}
+# Load libraries needed
+library(tidyverse)
+library(sf)
+library(lubridate)
+library(tidytext)
+library(scales)
+library(viridis)
+
+# Load the cleaned datafile 
+inspections <- read_csv("data/inspections_clean.csv")
+
+# Extract years and categorize violations appropriately
+inspections_over_time <- inspections |>
+  mutate(
+    year = year(inspection_date),
+    violation_category = case_when(
+      str_detect(violation_desc, "mice|rodent|droppings|insects|pests|harborage") ~ "Pest Control",
+      str_detect(violation_desc, "temperature|cool|hot-holding|cold-holding|refrigerat") ~ "Food Temperature",
+      str_detect(violation_desc, "wash|sanitiz|clean|wiping cloths|dishwashing") ~ "Sanitation & Cleaning",
+      str_detect(violation_desc, "hand wash|hygiene|no hair|bare hand") ~ "Employee Hygiene",
+      str_detect(violation_desc, "contaminat|cross-contamination|raw|covered|protect") ~ "Cross-Contamination",
+      str_detect(violation_desc, "floor|wall|ceiling|plumbing|ventilation|garbage") ~ "Facility/Maintenance",
+      TRUE ~ "Other"
+    )
+  ) |>
+  
+# Filter out appropriate years due to 1900 "outlier" (no available data between 1900 and 2007)
+filter(year >= 2007, year <= 2025)
+
+# Count violations per year and per category
+violation_trends <- inspections_over_time |>
+  group_by(year, violation_category) |>
+  summarise(count = n(), .groups = "drop") |>
+  arrange(year, desc(count))
+
+# Most frequent violations per year
+most_frequent_by_year <- violation_trends |>
+  group_by(year) |>
+  slice_max(order_by = count, n = 1) |>
+  ungroup()
+
+# Plot
+ggplot(violation_trends, aes(x = year, y = count, color = violation_category, group = violation_category)) + 
+  geom_line() + 
+  geom_point(data = most_frequent_by_year, aes(x = year, y = count)) + 
+  scale_color_viridis_d(option = "C") + 
+  scale_y_continuous(labels = comma) + 
+  scale_x_continuous(
+    breaks = seq(2007, 27025, by = 2),    # scale years every two years to avoid overlap
+    labels = seq(2007, 2025, by = 2)
+  ) +
+  labs(title = "Trends in Most Frequent Violation Categories Over Time", x = "Year", y = "Number of Violations", color = "Violation Category") +
+  theme_minimal()
+```
+We can see that Other is the largest category for most frequent violations per year consistently since the data has been tracked. This makes sense because the tracking methodology is not universal between Boston, NYC, Chicago, and SF, as we found in our EDA, so Other encapsulates all the data inspections unmarked by the categories included.
+
+Following are Sanitation & Cleaning, which has been the second most frequent violation. This also aligns with our previous EDA findings as Sanitation & Cleaning is a prioritized factor of food inspection violations as it is a front-of-store violation (clean vs dirty restaurant). Cross-Contamination and Pest Control are among the least frequent violations over time.
+
+There is a large gap of empty data between 1900 and 2007, indicating that food inspection violations were introduced in 1900 but were not officially conducted at a large number until 2007, where other categories became introduced. Hence, we removed the data from 1900-2007 in order to close the gap between the years and unskew the data. 
+
+```{r q2 - Most common violation in 2015 vs 2020}
+# Most common violation in 2015 and 2020, for example, to see the effect of environmental circumstances (COVID-19) on violation frequency. 
+
+years_to_compare <- c(2015, 2020)
+
+# Compare top category (which is Other, calculated in our previous code) in each year 
+violation_compare <- inspections_over_time |>
+  filter(year %in% years_to_compare) |>
+  group_by(year, violation_category) |>
+  summarise(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  slice_max(order_by = count, n = 1) |>
+  ungroup()
+
+violation_compare
+
+# Plot
+ggplot(violation_compare, aes(x = factor(year), y = count, fill = violation_category)) + geom_col() + 
+  scale_fill_viridis_d() + 
+  labs(title = "Most Common Violation in 2015 vs 2020", x = "Year", y = "Number of Violations", fill = "Top Category") +
+  theme_minimal()
+```
+For an example, I looked at how environmental circumstances affected food inspection violations in that year. COVID-19 is an environmental circumstance that inevitably affected restaurants in the year 2020 due to stores and businesses, including restaurants, being forced to shut down. Appropriately, we looked at a comparison in the most common violations in that year to 5 years prior, in 2015, representing a more "normal" time.
+
+According to this data, our suspicions were confirmed — there were significantly less violations counted in the most common violation category (Other) in 2020 than in 2015. Specifically, it reduced by about 7,214 counts. This makes sense, as food inspectors were not able to inspect restaurants in-person in 2020 while COVID-19 occurred. This is also visually represented in the bar chart.
+
+```{r q3 - All categories within 2015-2020, not just the most common}
+# Now, let's take a look at the side by side comparison in all violation categories within 2015 and 2020, not just the top one.
+
+# Count each violation category in each year
+violation_compare_all <- inspections_over_time |>
+  filter(year %in% years_to_compare) |>
+  group_by(year, violation_category) |>
+  summarise(count = n(), .groups = "drop")
+
+# Plot 
+ggplot(violation_compare_all, aes(x = violation_category, y = count, fill = factor(year))) +
+  geom_col(position = "dodge") +
+  scale_fill_viridis_d() +
+  labs(title = "Violation Categories in 2015 vs 2020", x = "Violation Category", y = "Count", fill = "Year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Calculating which violations grew the most in 2015 vs 2020
+violation_diff <- violation_compare_all |>
+  pivot_wider(names_from = year, values_from = count, values_fill = 0) |>
+  mutate(change = `2020` - `2015`)
+
+violation_diff
+```
+In the first graph, we compared all the categories in 2015 vs 2020. In this one, we can see a similar trend in comparing all the categories inspection counts in 2015 vs 2020. The counts for food violation inspections were higher in 2015 compared to 2020, again due to lack of inspections of restaurants from COVID-19.
+
+Numerically, the largest change in violation category came from Other, which decreased by 7,214 counts. This is understandable as it is the largest category with the most common violations over time. Following are Facility/Maintenance with 6,979 less and Sanitation & Cleaning with 5,768 less. This also aligns with our original findings as these two were the runner-up categories of most common violations.
+
+Interestingly, the Food Temperature and Employee Hygiene categories increased by 85 and 6 counts respectively from 2015 to 2020. While low numbers, these are the only categories that increased in counts. Proportionally, it is especially interesting that Employee Hygiene increased considering it had no violations in 2015 and went up to 6 in 2020. This behavior can be explained by redistribution of prioritization of the food inspection system, where they were likely placed at a higher priority within those 5 years. Employee Hygiene may have also been introduced within those years, explaining the 0 --> 6 count jump.
+
+```{r q4 - Severity of violations}
+# We can also look at the violations from a severity perspective
+
+# Create a variable assigning severity by categories in dataset: Fail, Closed, Violation, Pass, and Other
+inspections_over_time <- inspections_over_time |>
+  mutate(
+    severity = case_when(
+      str_detect(tolower(result), "fail") ~ "Fail",
+      str_detect(tolower(result), "closed") ~ "Closed",
+      str_detect(tolower(result), "violation") ~ "Violation",
+      str_detect(tolower(result), "pass") ~ "Pass",
+      TRUE ~ "Other"
+      )
+  )
+
+# Plot
+inspections_over_time |>
+  filter(year %in% c(2015, 2020)) |>
+  ggplot(aes(x = severity, fill = factor(year))) + geom_bar(position = "dodge") +
+  labs(title = "Severity of Inspections in 2015 vs 2020", x = "Severity", y = "Count", fill = "Year") +
+  theme_minimal()
+```
+Looking at the severity of the food inspection violation cases, we see that Other holds the highest concentration of violations in 2015 and 2020 both. This means that there were other categories such as nonstandard outcomes (inconclusive, reopen) or administrative statuses (not inspected yet) that were more commonly attributed to restaurants by food inspectors restaurants as opposed to closed, failed, or passed. 
+
+Restaurants under the "Fail" severity category had the second highest count, which is concerning, especially since it exceeded the count of restaurants under the "Pass" severity category. There are no counts for the closed category, meaning in both 2015 and 2020 in all 4 major cities, there was not one restaurant that needed to be shut down due to extreme violation leading to a close.
+
+```{r q5 - Composition of violations per year}
+# How does the composition of all violations change year over year? 
+
+# Plot 
+ggplot(violation_trends,aes(x = factor(year), y = count, fill = violation_category)) +
+  geom_bar(stat = "identity") + 
+  scale_fill_viridis_d(option = "C") + 
+  labs(title = "Violation Category Composition by Year", x = "Year", y = "Total Violations", fill = "Category") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+The composition of violations has been relatively steady over the past couple years. This means that over time, each category has sat in about the same place proportionally to the other categories.The Other category has consistently had the highest proportion of food inspection violations compared to the other categories, with the exception of 2020 when COVID-19 started and 2021 as it continued. Sanitation & Cleaning has had the second highest share proportionally, meaning these two categories are prominent in the food violation inspection space. The Cross-Contamination, Employee Hygiene, Facility/Maintenance, and Pest Control categories have consistently taken up the least amount of shares of food inspection violations over the years.
+
+```{r q6 - Inspection volume over time per city}
+# Filter date to count inspection volume over time per city 
+inspections |>
+  filter(inspection_date > "2000-01-01") |>
+  mutate(year = year(inspection_date)) |>
+  count(city_source, year) |>
+  
+# Plot
+ggplot(aes(x = year, y = n, color = city_source)) +
+geom_line() +
+labs(title = "Inspection Volume Over Time by City", x = "Year", y = "Total Inspections")
+```
+In our EDA, we looked at distribution of inspections over time, but not the volume. We can see that Boston has consistency leveled at ~50,000 inspections for the past decade. Chicago and San Francisco are lower, with under 25,000, and also are newer in that the data for their inspections is very recent. New York skyrocketed in inspections after 2020, which makes sense as most restaurants bounced back after COVID-19 and New York's appeal and popularity exceeds that of the other major metropolitan cities. 
+
+```{r q7 - Violations in Other year by year}
+#How has the total number of violations in the leading category, Other, performed year by year? Is it a new trend for this category to be the top, or has it been happening for a while over time? Rate of change inspection
+
+# Plot
+ggplot(most_frequent_by_year, aes(x = factor(year), y = count, fill = violation_category)) + geom_col() + 
+  scale_fill_viridis_d(option = "C") + 
+  labs(title = "Top Violation (Other) Total Count Each Year", x = "Year", y = "Number of Violations", fill = "Top Category") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Broken down by year, we can see the leading category in most common violation inspections (which is Other) has been an increasing trend for the past couple years. This has been consistent over the past two decades, with the exception of 2020's effect of COVID-19. The unproportional rise in 2021 and 2022 is explained by the return of the economy post COVID-19, where restaurants and businesses began to reopen in society.
+
+## Niki's Analysis
+### Overall Monthly analysis
+```{r}
+# Categorizing the different inspections for later analysis
+inspections_cat <- inspections |>
+  mutate(
+  violation_category = case_when(
+      str_detect(violation_desc, "mice|rodent|droppings|insects|pests|harborage") ~ "Pest Control",
+      str_detect(violation_desc, "temperature|cool|hot-holding|cold-holding|refrigerat") ~ "Food Temperature",
+      str_detect(violation_desc, "wash|sanitiz|clean|wiping cloths|dishwashing") ~ "Sanitation & Cleaning",
+      str_detect(violation_desc, "hand wash|hygiene|no hair|bare hand") ~ "Employee Hygiene",
+      str_detect(violation_desc, "contaminat|cross-contamination|raw|covered|protect") ~ "Cross-Contamination",
+      str_detect(violation_desc, "floor|wall|ceiling|plumbing|ventilation|garbage") ~ "Facility/Maintenance",
+      TRUE ~ "Other"
+    )
+   )
+# Adding columns that tell me the month and what season that month correlates to
+monthly_season <- inspections_cat|>
+  mutate(month = month(inspection_date), season = case_when(
+      month %in% c(12, 1, 2) ~ "Winter",
+      month %in% c(3, 4, 5) ~ "Spring",
+      month %in% c(6, 7, 8) ~ "Summer",
+      month %in% c(9, 10, 11) ~ "Fall"
+    )
+    )|>
+  filter(!is.na(month))
+
+# Food Inspection Violations by Month over all cities
+month_count <- monthly_season|>
+  group_by(month)|>
+  summarise(count = n())
+
+ggplot(month_count, aes(x = factor(month), y = count)) +
+  geom_col(fill = "steelblue")+
+  labs(
+    title = "Food Inspection Violations by Month over all cities",
+    x = "Month",
+    y = "Number of Violations"
+  )
+
+
+```
+### By City Montly Analysis
+```{r}
+# Food Inspection Violations by Month for each city
+monthly_city_count <- monthly_season|>
+  group_by(city_source, month)|>
+  summarise(count = n())
+
+ggplot(monthly_city_count) +
+  geom_line(aes(x = month, y = count, color = city_source)) +
+  scale_x_continuous(breaks = 1:12)+
+  labs(
+    title = "Food Inspection Violations by Month for each city",
+    x = "Month",
+    y = "Number of Violations"
+  )
+```
+For this part of the analysis, we are looking at which months food violations tend to peak.The first plot shows the distribution of food inspection violations across all cities over the course of the year. Violations tend to peak in March and October, with October having the highest total number of violations. The second plot breaks the data down by city. Each city follows a similar pattern, with peaks in March and October, consistent with the overall trend observed in the first plot.
+
+### Overall Seasonal Analysis
+```{r}
+# Food Inspection Violations by Seasons over all cities
+seasonal_count <- monthly_season|>
+  group_by(season)|>
+  summarise(count = n())
+ggplot(seasonal_count, aes(x = season, y = count)) +
+  geom_col(fill = "steelblue")+
+  labs(
+    title = "Food Inspection Violations by Seasons over all cities",
+    x = "Seasons",
+    y = "Number of Violations"
+  )
+
+```
+
+
+### By City Season Analysis
+```{r}
+# Food Inspection Violations by Season for each city
+seasonal_city_count <- monthly_season|>
+  group_by(city_source, season)|>
+  summarise(count = n())
+
+ggplot(seasonal_city_count, 
+       aes(x = season, y = count, fill = city_source)) +
+  geom_col() +
+  facet_wrap(~ city_source, nrow = 2) + 
+  scale_y_continuous(labels = comma) + 
+  labs(
+    title = "Food Inspection Violations by Season for each city",
+    x = "Season",
+    y = "Number of Violations"
+  )
+```
+For this part of the analysis, we are looking at which seasons food violations tend to peak. In the third plot, it shows the distribution of food inspection violations across all cities over the seasons. Violations tend to peak in spring with fall being season with the second most amount of food violations. The fourth plot breaks it down by city. Each city follows a similar pattern, with spring being the season with the most violations, consistent with the overall trend observed in the first plot.
+
+
+
+```{r}
+# Monthly Trends for Each Violation Category
+monthly_violation_counts <- monthly_season|>
+  filter(!is.na(season),!is.na(violation_category))|>
+  group_by(violation_category, month)|>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(monthly_violation_counts,
+       aes(x = month, y = count, group = violation_category)) +
+  geom_line(linewidth = 1.2, color = "steelblue") +
+  geom_point() +
+  facet_wrap(~ violation_category, scales = "free_y", nrow = 3) +
+  scale_x_continuous(breaks = 1:12) +
+  theme(
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    title = "Monthly Trends for Each Violation Category",
+    x = "Month",
+    y = "Number of Violations"
+  )
+
+```
+After examining overall and city-level monthly and seasonal trends, we analyzed each violation category separately to determine when different types of violations tend to peak. The figure shows that most categories reach their highest levels in October, suggesting a strong fall seasonal effect across multiple types of food safety risks.
+
+An important exception is Employee Hygiene, which peaks in April rather than October. This may reflect seasonal staffing changes, onboarding of new employees in the spring, or changes in enforcement focus. Overall, this suggests that while many violations follow a common seasonal pattern, some categories exhibit distinct timing, which could be useful for targeted inspections and interventions.
+
+```{r}
+# Seasonal Distribution for Each Violation Category
+season_violation_counts <- monthly_season|>
+  filter(!is.na(season),!is.na(violation_category))|>
+  group_by(violation_category, season)|>
+  summarise(count = n(), .groups = "drop")
+
+ggplot(season_violation_counts,
+       aes(x = season, y = count, fill = season)) +
+  geom_col() +
+  facet_wrap(~ violation_category, scales = "free_y", nrow = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(
+    title = "Seasonal Distribution for Each Violation Category",
+    x = "Season",
+    y = "Number of Violations"
+  )
+
+
+```
+The figure above shows the distribution for each violation category during each season. The figure shows that most categories reach their highest levels in spring, which is interesting to note as the monthly breakdown showed that most of the violations peaked in month of October. This suggests that even though the most violation occur in October, violations build up during the spring time.
+
+An important exception is Pest Control and Food Temperatrure. Pest control violations peak in the fall, likely because colder outdoor temperatures drive rodents and insects indoors, increasing the risk of infestations in food establishments. Food temperature violations remain relatively consistent across seasons, with a slight increase in the winter, which may be related to increased reheating practices and greater reliance on hot food holding during colder months. Overall, these trends suggest that food safety risks fluctuate seasonally and differently by violation type, reinforcing the importance of timing inspections to periods of elevated risk.
+
+>>>>>>> 06fa5a286ccca974cb51298f18cb1b8cdc53286f
