@@ -849,17 +849,7 @@ unannounced, comprehensive checks.
 
 Our analysis confirms two critical relationships:
 
-<<<<<<< HEAD
-1.  **Business Model Risk:** The type of cuisine a restaurant serves
-    creates a unique "fingerprint" of health risks (Q1). Complex cooking
-    (Restaurant General) correlates with **Food Temperature** issues,
-    while high-volume raw preparation (Sushi/Deli) correlates with
-    **Pest Control** and **Cross-Contamination**.
-2.  **Inspection Type Bias:** Public complaints (Q2) are highly
-    effective at flagging immediate public health threats, demonstrating
-    a higher proportional incidence of **High Risk** violations and
-    **Pest Control** problems compared to routine inspections.
-=======
+
 1.  **Business Model Risk:** The type of cuisine a restaurant serves creates a unique "fingerprint" of health risks (Q1). Complex cooking (Restaurant General) correlates with **Food Temperature** issues, while high-volume raw preparation (Sushi/Deli) correlates with **Pest Control** and **Cross-Contamination**.
 2.  **Inspection Type Bias:** Public complaints (Q2) are highly effective at flagging immediate public health threats, demonstrating a higher proportional incidence of **High Risk** violations and **Pest Control** problems compared to routine inspections.
 
@@ -1204,4 +1194,4 @@ The figure above shows the distribution for each violation category during each 
 
 An important exception is Pest Control and Food Temperatrure. Pest control violations peak in the fall, likely because colder outdoor temperatures drive rodents and insects indoors, increasing the risk of infestations in food establishments. Food temperature violations remain relatively consistent across seasons, with a slight increase in the winter, which may be related to increased reheating practices and greater reliance on hot food holding during colder months. Overall, these trends suggest that food safety risks fluctuate seasonally and differently by violation type, reinforcing the importance of timing inspections to periods of elevated risk.
 
->>>>>>> 06fa5a286ccca974cb51298f18cb1b8cdc53286f
+
