@@ -126,6 +126,7 @@ The time series analysis examined how the frequency of violations changed over t
 * **Overall Time Trend:** The **"Other"** category has consistently been the most frequent violation type, followed by **Sanitation & Cleaning**. Cross-Contamination and Pest Control are among the least frequent violations over time. An immediate limitation of this is that the Other category is a catch-all bucket representing the categories not included in the analysis. This is due to the imperfect
 standardization of our data. This explains why it is the largest category. Therefore, we can say **Sanitation & Cleaning** is the more "important" data point here, as it is more representative of the overall data and consistent with our previous findings.
     * Broken down by year, the leading category in most common violation inspections (**Other**) has been an increasing trend for the past couple years. This has been consistent over the past two decades, with the exception of 2020's effect of COVID-19. The unproportional rise in 2021 and 2022 is explained by the return of the economy post COVID-19, where restaurants and businesses began to reopen in society.
+![](report_images/viocat_overtime.png)
 
 * **Composition of Violations:** The proportional composition of all violation categories has been relatively steady over the past couple of years, meaning each category has held a similar share proportionally to the others. The large shift in total volume is primarily driven by the **Other** and **Sanitation & Cleaning** categories, which are the most prominent in the inspection space. This is consistent 
 with our previous findings within our longitudinal data analysis, as well.
@@ -135,7 +136,6 @@ with our previous findings within our longitudinal data analysis, as well.
 and restricted in-person activity.
     * **Largest Decreases:** The largest numerical decreases were seen in the highest-volume categories: **Other** (decreased by 7,214 counts), **Facility/Maintenance** (decreased by 6,979 counts), and **Sanitation & Cleaning** (decreased by 5,768 counts).
     * **Unique Increases:** The **Food Temperature** (increased by 85 counts) and **Employee Hygiene** (increased by 6 counts) categories were the *only* categories to see a slight numerical *increase* from 2015 to 2020. This behavior suggests that during the crisis, the limited inspections conducted were highly prioritized, focusing on critical risks like safe temperatures and employee hygiene protocols.
-![](report_images/viocat_overtime.png)
 
 * **Severity Comparison:** Looking at the severity of violation cases (Fail, Pass, Violation, Closed), the **Other** category consistently holds the highest concentration of violations. Here, the **Other** category reflects administrative statuses or nonstandard outcomes, such as Pending Inspection, Inconclusive, etc. Notably, the **Fail** severity category had the second highest count, exceeding the count 
 of the **Pass** severity category in both 2015 and 2020.
