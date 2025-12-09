@@ -4,6 +4,7 @@
 # Session Data files
 .RData
 .RDataTmp
+.RDataTmp1
 # User-specific files
 .Ruserdata
 # Example code in package build process
@@ -38,12 +39,4 @@ Boston Shapefiles/
 #data source csv files
 data/
 .DS_Store
-<<<<<<< HEAD
-Rstudentsproject.nb.html
-=======
 
-Rstudentsproject.nb.html
-
-
-
->>>>>>> b698472a63f53d4ad37981be2ca7df91bacd411b

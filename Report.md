@@ -53,9 +53,9 @@ We successfully transformed disparate risk columns into a unified, easy-to-under
 
 | Finding | Summary | Plot Reference |
 | :--- | :--- | :--- |
-| **Inspection Outcome Bias** | Boston and San Francisco log the highest proportion of "Fail" outcomes, while New York City's system is highly skewed toward "Pass" (Grade A). This confirms that "Pass" and "Fail" definitions are not comparable between cities. |  ![](images/BasicPlots-1.png)  |
-| **Risk Differences** | Chicago and New York log a dramatically higher proportion of **High Risk** violations than Boston, demonstrating different regulatory definitions of risk. |  ![](images/CityComparisons-2.png) |
-| **Score System** | New York uses a demerit system (lower score is better), while San Francisco uses a points-based system (higher score is better). Our logic successfully mapped these opposites into consistent outcomes. | ![](images/CityComparisons-3.png) |
+| **Inspection Outcome Bias** | Boston and San Francisco log the highest proportion of "Fail" outcomes, while New York City's system is highly skewed toward "Pass" (Grade A). This confirms that "Pass" and "Fail" definitions are not comparable between cities. |  ![](report_images/BasicPlots-1.png)  |
+| **Risk Differences** | Chicago and New York log a dramatically higher proportion of **High Risk** violations than Boston, demonstrating different regulatory definitions of risk. |  ![](report_images/CityComparisons-2.png) |
+| **Score System** | New York uses a demerit system (lower score is better), while San Francisco uses a points-based system (higher score is better). Our logic successfully mapped these opposites into consistent outcomes. | ![](report_images/CityComparisons-3.png) |
 ---
 
 ## Results
@@ -69,7 +69,7 @@ The geographic analysis focused on **Boston** to identify localized risk factors
 * **Urban/Suburban Pass Rate Test:** A two-category comparison was conducted, designating a restaurant as "Urban" if it had 10 or more neighbors within a 100-meter radius, and "Suburban" otherwise.
     * **Finding:** The proportion table showed that the Pass Rate for Urban restaurants was **0.8% higher** than for Suburban restaurants. This suggests suburban restaurants tend to fail health inspections slightly more often.
     * **Significance:** A Chi-Squared Test yielded a p-value of $6.969 \times 10^{-10}$, allowing us to reject the null hypothesis. We have evidence that Urban/Suburban designation and health inspection pass rates **are dependent on one another**.
-    * ![](images/hotspot_map.png)
+    * ![](report_images/hotspot_map.png)
 
 * **???????? Detailed Relationship:** A logistic regression analysis (GAM smooth) exploring the relationship between the number of neighbors and the restaurant's average pass rate confirmed the overall trend: there is a slight negative correlation between restaurant clustering and failure rates. 
 
@@ -85,7 +85,7 @@ To answer whether specific cuisine types face unique risks, we categorized viola
     * **Pest Control Dominance:** **Sushi/Japanese, Sandwich/Deli, and Bar/Pubs** have the highest *proportion* of **Pest Control** violations (over 25% of their issues).
     * **Sanitation Focus:** **Coffee/Bakery, Pizza, and Chinese** restaurants are highly dominated by **Sanitation & Cleaning** violations (often exceeding 40%).
 
-![](images/fingerprint.png)
+![](report_images/fingerprint.png)
 
 #### 2b. Severity Difference: Complaint vs. Routine Inspections
 
@@ -95,7 +95,7 @@ To answer whether specific cuisine types face unique risks, we categorized viola
     * **Routine inspections** find a much higher proportion of **Sanitation & Cleaning** and **Facility/Maintenance** problems.
     * This suggests patrons report visible signs of pests, while inspectors uncover structural/hygiene problems during comprehensive checks.
 
-![](images/Violation_severity.png)
+![](report_images/Violation_severity.png)
 
 ### Q3. Temporal and Seasonal Patterns (Niki's Analysis)
 
@@ -104,9 +104,9 @@ The temporal analysis investigated when and why food inspection violations occur
 #### Monthly and Seasonal Peaks
 
 * **Overall Monthly Peak:** The distribution of food inspection violations across all cities shows a strong bimodal trend, peaking in **March** and **October**. **October** records the highest single monthly volume of violations (around 150k violations).
-![](images/monthallcities.png)
+![](report_images/monthallcities.png)
 * **City Consistency:** All cities follow this bimodal pattern of peaks in March and October, confirming a **consistent annual inspection cycle** across the entire dataset .
-* **Seasonal Peak:** Despite the strong October peak, the cumulative violation count is highest in **Spring** . ![](images/seasonbycities.png)
+* **Seasonal Peak:** Despite the strong October peak, the cumulative violation count is highest in **Spring** . ![](report_images/seasonbycities.png)
 This apparent contradiction is resolved when considering that **Spring spans three months of elevated activity** (March, April, and May), while October represents a single, isolated peak month in Fall. The cumulative effect across the three Spring months results in Spring having the highest total violations overall .
 
 #### Violation Specificity
@@ -115,7 +115,7 @@ This apparent contradiction is resolved when considering that **Spring spans thr
 * **Employee Hygiene Outlier:** **Employee Hygiene** peaks notably in **April**, potentially reflecting spring staffing changes or training cycles .
 * **Facility/Maintenance and Other:** These violations exhibit bimodal patterns with comparable peaks in both March and October, indicating these issues arise at two distinct points in the annual cycle.
 * **Conclusion:** **Spring** emerges as the period with the highest overall risk, necessitating prioritization for comprehensive inspections and preventive measures.
-![](images/seasonvio.png)
+![](report_images/seasonvio.png)
 ---
 
 
