@@ -5,13 +5,9 @@ output:
     df_print: paged
   pdf_document: default
   html_notebook: default
-editor_options: 
-  markdown: 
-    wrap: 72
 ---
 
 ### Load Libraries and Data
-
 ```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(sf)
@@ -19,18 +15,15 @@ library(lubridate)
 library(tidytext)
 library(scales)
 library(viridis)
-library(ggplot2)
 
 # Load the single, final clean file
 inspections <- read_csv("data/inspections_clean.csv")
 ```
 
 ## EDA Report
-
-The goal of this section is to understand the overall shape of our data.
+The goal of this section is to understand the overall shape of our data, distribution, and integrity of our combined 1.4 million-row dataset (despite the imbalance between records we noted when downloading the dataset).
 
 ### Basic Plots
-
 ```{r Basic Plots}
 # Inspections by City
 ggplot(inspections, aes(x = city_source)) + geom_bar() + labs(title = "Inspections by City") + theme_minimal()
@@ -53,46 +46,10 @@ scale_y_continuous(labels = label_comma()) +
   labs(title = "Distribution of Inspections Over Time", x = "Date", y = "Count")
 ```
 
-Our initial phase of exploratory data analysis (EDA) focused on
-understanding the overall shape, distribution, and integrity of our
-combined 1.4 million-row dataset. This initial analysis confirms our
-combined dataset is large, usable, and modern, but critically
-imbalanced.
+The time range plot clearly identifies a small cluster of placeholder dates from 1900 that we must filter out before conducting any time-series analysis. The warning message also confirmed that a negligible number of rows (~6,400, or <0.5%) were dropped due to missing dates, which should not impact our analysis of 1.4 million other records.
 
-Plot 1: Inspections by City This bar chart shows the total number of
-inspections contributed by each city. The key finding here is that our
-dataset is heavily imbalanced. Boston is the source of a large majority
-of our data (over 750,000 rows), while Chicago and New York are
-similarly sized, and San Francisco is our smallest dataset.
-
-This is a critical finding because it confirms that we cannot use raw
-counts to compare cities. All future city-to-city comparisons must be
-based on proportions or percentages (using position = "fill") to be fair
-and accurate.
-
-Plot 2: Overall Inspection Outcomes This plot shows the distribution of
-our newly-created inspection_outcome column across the entire dataset.
-While "Fail" and "Pass" are the most frequent outcomes, this plot is
-heavily skewed by the disproportionate size of the Boston data. We can't
-draw any real conclusions from this yet. Its main purpose for now is to
-confirm that our case_when() logic successfully categorized all 1.4
-million rows.
-
-Plot 3: Distribution of Inspections Over Time This histogram is one of
-our most important initial plots. It confirms two things:
-
-The data is recent: The vast majority of our inspections occurred from
-roughly 2005 to the present, which is excellent for answering our
-research questions about modern trends.
-
-We have "bad data" to filter: The plot clearly identifies a small
-cluster of "bad data" (placeholder dates from 1900) that we must filter
-out before conducting any time-series analysis. The warning message also
-confirmed that a negligible number of rows (\~6,400, or \<0.5%) were
-dropped due to missing dates, which will not impact our analysis.
 
 ### City Comparisons
-
 ```{r City Comparisons}
 #Outcomes by City
 ggplot(inspections, aes(x = city_source, fill = inspection_outcome)) + 
@@ -111,101 +68,61 @@ ggplot(inspections, aes(x = city_source, y = inspection_score)) +
 
 ggplot(inspections, aes(x = inspection_outcome, y = inspection_score, fill = city_source)) +
   geom_boxplot() + 
-  facet_wrap(~ city_source) + #show how our standardized Pass/Fail categories line up with the numeric scores
-    labs(title = "Score Distributions by City (Standardized")
-
+  facet_wrap(~ city_source) + 
+    labs(title = "Score Distributions by City (Standardized)")
 ```
+After establishing the overall shape of our data, we drilled down to compare the four cities. This is where our standardization efforts provide their first major insights, revealing that the cities have vastly different inspection profiles.
 
-After establishing the overall shape of our data, we drilled down to
-compare the four cities. This is where our standardization efforts
-provide their first major insights, revealing that the cities have
-vastly different inspection profiles.
-
-Plot 4: Proportions of Outcomes by City This plot directly compares the
-pass/fail rates for each city. We found that Boston and San Francisco
-have the highest proportion of "Fail" outcomes. In contrast, New York's
-profile is dominated by "Pass" (reflecting their 'A' grades) and
-"Pending" results. This confirms that each city's grading system is
-unique and that our inspection_outcome column successfully captured
-these differences.
-
-Plot 5: Proportion of Risk Level by City This is one of the most
-striking findings so far. Chicago and New York log a dramatically higher
-proportion of "High Risk" violations than Boston and San Francisco. In
-Chicago, "High Risk" appears to be the most common category, while in
-Boston, "Low Risk" is dominant. This may reflect different public health
-definitions of "risk" or different areas of focus for each city's
-inspectors.
-
-Plot 6 & 7: Score Distributions These two plots (which we've combined
-for analysis) confirm our inspection_outcome logic and reveal the
-inverted nature of the scoring systems.
-
-NYC uses a demerit system: A lower score is better. Our plot shows that
-"Pass" (Grade A) has the lowest scores, while "Fail" (Grade C) has the
-highest.
-
-SF uses a points-based system: A higher score is better. Our plot
-confirms this, showing "Pass" (90+) has the highest scores and "Fail"
-(71-85) has lower scores.
-
-This analysis validates our standardization and proves that the two
-scoring systems are direct opposites.
-
-### Exploring Fail Rates Over Time
-
+### Exploring Fail Rates Over Time 
 ```{r Exploring Fail Rates}
-
 # Create a summary table
 fails_by_year <- inspections |>
-  filter(inspection_date > "2000-01-01") |> # filter out 'bad' dates
+  filter(inspection_date > "2000-01-01") |> 
   mutate(year = year(inspection_date)) |>
   group_by(city_source, year) |>
   summarize(
     fail_rate = mean(inspection_outcome == "Fail", na.rm = TRUE),
     total_inspections = n()
   ) |>
-  filter(total_inspections > 100) # Remove years with tiny data
+  filter(total_inspections > 100) 
 
 # Plot the summary
 ggplot(fails_by_year, aes(x = year, y = fail_rate, color = city_source)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
-  scale_y_continuous(labels = label_percent()) +     # format y-axis as percentage
-  scale_color_viridis_d() +                         # add better colors
+  scale_y_continuous(labels = label_percent()) +     
+  scale_color_viridis_d() +                         
   labs(
     title = "Fail Rate Over Time by City", 
-    y = "Proportion of Fails",                      # <-- Fix y-axis label
+    y = "Proportion of Fails",                      
     x = "Year",
-    color = "City"                                  # <-- Fix legend title
+    color = "City"                                  
   )
 
 # Least Successful zipcodes in each city in the dataset
 fails_by_zip <- inspections |>
-  filter(inspection_date > "2000-01-01") |> # Good idea to filter bad dates
+  filter(inspection_date > "2000-01-01") |> 
   group_by(city_source, zip_code) |>
   summarize(
     fail_rate = mean(inspection_outcome == "Fail", na.rm = TRUE),
     total_inspections = n()
   ) |>
-  filter(total_inspections > 100) |> # Only include zips with 100+ inspections
+  filter(total_inspections > 100) |> 
   ungroup()
 
 # Summary table for zip codes
 fails_by_zip |>
-  group_by(city_source) |>      # Group by city
-  top_n(3, fail_rate) |>        # Find the top 3 *within* that city
+  group_by(city_source) |>      
+  top_n(3, fail_rate) |>        
   ungroup() |>
-  
-  # This 'reorder_within' is a special trick to make facets work
-  mutate(
+    mutate(
     zip_code = tidytext::reorder_within(zip_code, fail_rate, city_source)
   ) |>
 
   ggplot(aes(x = zip_code, y = fail_rate, fill = city_source)) +
   geom_col() +
-  tidytext::scale_x_reordered() + # This makes the labels plot correctly
-  facet_wrap(~ city_source, scales = "free") + #Create 4 separate charts
+  tidytext::scale_x_reordered() + 
+  facet_wrap(~ city_source, scales = "free") + 
   coord_flip() +
   labs(
     title = "Top 3 Zip Codes with Highest Fail Rate by City",
@@ -213,115 +130,10 @@ fails_by_zip |>
     y = "Fail Rate"
   ) +
   theme(legend.position = "none")
-
 ```
 
-Following our city-level comparisons, we moved into our first
-multivariate analysis to answer our research questions about where and
-when violations occur.
+Following our city-level comparisons, we moved into our first multivariate analysis to answer our research questions about where and when violations occur.
 
-Plot 8: Fail Rate Over Time by City This line graph plots the proportion
-(percentage) of "Fail" outcomes for each city, from 2008 to 2025. This
-is our most significant finding so far:
-
-Dramatically Different Systems: The definition of a "Fail" is clearly
-not standardized.
-
-Boston: Has a very high and consistent "Fail" rate, hovering around 60%
-for the entire 15-year period. This strongly suggests that Boston's
-result column logs a "Fail" for even minor infractions, making it a very
-common outcome.
-
-Chicago: Shows a positive trend. Its fail rate has steadily decreased
-from \~25% in 2010 to a stable \~18-20% in recent years.
-
-New York: Has an extremely low fail rate, consistently staying below
-10%. This aligns perfectly with their "Grade A" system, where a 'C'
-(which we mapped to "Fail") is rare.
-
-San Francisco: Appears to have a fail rate of around 30%, landing
-between Boston and the other two cities.
-
-Plot 9: Top 3 Worst Zip Codes by City This bar chart was intended to
-find the "worst" zip codes across the entire dataset. We have now
-successfully identified specific geographic areas of concern for each
-city:
-
-Boston: 02119-3212, 02120
-
-Chicago: 60827, 60619
-
-New York: 11436, 11428
-
-San Francisco: 94134, 94118
-
-### Boston Zipcodes Map
-
-```{r}
-
-
-bos_insp <- inspections |>
-  filter(city_source == "Boston") |>
-  mutate(zip_code = sub("-.*$", "", zip_code))
-
-
-bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
-
-bos_borders <- bos |> st_union() |>
-  st_buffer(.5)
-ggplot(bos_borders) +
-  geom_sf(data=bos, aes(fill = ZIP5))
-
-
-# Density map of restaurants per zipcode
-
-
-rstnt_density <- bos_insp |>
-  filter(!str_detect(location_string, regex("34\\."))) |>
-  group_by(zip_code) |>
-  summarize(n_restaurants = n_distinct(address_full))
-  
-bos <- bos |>
-  rename(zip_code = ZIP5)
-
-bos_joined <- left_join(bos, rstnt_density, by = "zip_code")
-
-ggplot(bos_borders) +
-  geom_sf(data=bos_joined, aes(fill = n_restaurants)) +
-  labs(fill = "Number of Restaurants")
-```
-
-There are 43 zip codes in the City of Boston. The
-
-### Top Violations Overall
-
-```{r Top Violations Overall}
-top_bigrams <- inspections |>
-  sample_frac(0.5) |>  # Taking a 50% random sample to reduce memory load
-  filter(!is.na(violation_desc)) |>
-  unnest_tokens(bigram, violation_desc, token = "ngrams", n = 2) |>
-  count(bigram, sort = TRUE)
-
-# Plot the top 20
-top_bigrams |>
-  top_n(20) |>
-  ggplot(aes(x = reorder(bigram, n), y = n)) +
-  geom_col() +
-  coord_flip() +
-  labs(
-    title = "Top 20 Most Common Violation Phrases (50% Sample)",
-    x = "Violation Phrase (Bigram)",
-    y = "Total Count"
-  )
-```
-
-This plot, despite successfully processing the text, shows that the most
-common phrases across all cities are generic, high-frequency functional
-words like 'food contact' and 'non food'. We do not see specific issues
-like 'rodent' or 'improper temperature' in the top 20, confirming that
-these key issues are diluted by common, general phrases. This validates
-our next step to use manual keyword searching to group thousands of
-unique violations into meaningful categories.
 
 ### Days of the week that see the most inspections
 
@@ -335,11 +147,6 @@ inspections |>
   labs(title = "Inspections by Day of Week")
 ```
 
-This analysis confirms that inspection frequency is heavily skewed
-toward weekdays, with a slight peak on Tuesday. The low counts on Sunday
-and Saturday suggest that weekend inspections are rare or reserved only
-for specific facilities.
-
 ### Inspection Frequency per Restaurant
 
 ```{r Inspections per Restaurant}
@@ -348,293 +155,63 @@ ggplot(inspections |> count(restaurant_name), aes(n)) +
   labs(title="Distribution of Inspections per Restaurant", x="Number of Inspections", y="Number of Restaurants")
 ```
 
-The tallest bar shows that nearly 10,000 restaurants have been inspected
-only once (or close to once) during the dataset's time frame. The number
-of restaurants drops off steeply for businesses inspected just 2, 3, or
-4 times. The long, flat tail on the right is highly significant. While
-most businesses are inspected infrequently, a small but consistent
-number of restaurants are inspected 20, 30, 40, or even 50+ times. This
-may be due to routine inspections happening, but this is unlikely for
-the time period covered in our data. This coudl also suggest that the
-inspection system is effectively using a risk-based approach.
-Restaurants that fail or have serious violations are likely pushed into
-re-inspection cycles or receive more frequent routine inspections.
-Conversely, successful restaurants are inspected less often, freeing up
-resources.
+The tallest bar shows that nearly 10,000 restaurants have been inspected only once (or close to once) during the dataset's time frame. The number of restaurants drops off steeply for businesses inspected just 2, 3, or 4 times.
 
 ## Answering Research Questions
 
 ## Gian's Analysis
 
-I would like to investigate the geographic distribution of different
-aspects of the health code inspections in Boston. To do this, I will
-isolate all of the Boston health inspection records and map several
-factors of the data onto a map of the City of Boston, separated by
-zipcode subsection.
-
-We have a restaurant density map already from EDA, but I want to be more
-specific and see what the restaurant hotspots are in the city.
-
-```{r hotspot}
-
-# Group by all of the different restaurants, using addresses due to the fact that the same restaurant may be spelled slightly differently by different inspectors.
-
-bos_insp <- inspections |>
-  filter(city_source == "Boston")
-bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
-
-bos_borders <- bos |> st_union() |>
-  st_buffer(.5)
-
-###### ^^^^ Upload Shapefiles (same as EDA) ######
-
-
-ind_rsts <- bos_insp |>
-  distinct(address_full, .keep_all = TRUE) |>
-  mutate(coords_clean = str_remove_all(location_string, "[()]"))|>
-  separate(coords_clean, into = c("lat", "lon"), sep = ",", convert = T) |>
-  mutate (
-    lat = as.numeric(lat),
-    lon = as.numeric(lon)
-  ) |>
-  drop_na(lat,lon) |>
-  filter(
-    lat > 41, lat < 42.8,
-    lon > -71.8, lon < -70.7
-  ) |>
-  select(restaurant_name, address_full, lat, lon)
-
-
-coords_sf <- ind_rsts |>
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
-  st_transform(26986)
-
-
-bos <- bos |> 
-  st_transform(26986)
-
-df_coords <- as.data.frame(st_coordinates(coords_sf))
-
-my_labels <- c(
-  "0 Neighbors",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "70 Neighbors"
-)
-
-ggplot() +
-  geom_density_2d_filled(
-    data = df_coords,
-    aes(X, Y, fill = ..level..),
-    contour_var = "ndensity",
-    alpha = 0.8,
-    h = c(500, 500),
-    clip = "on"
-  ) +
-  scale_fill_viridis_d(option = "mako",
-                       direction = -1,
-                       labels = my_labels) +   
-  theme_minimal() +
-  labs(title = "City of Boston Restaurant Hotspot Map",
-       fill = "Density Scale") +
-  geom_sf(data = bos, fill = NA, color = "black", size = 0.05) +
-  theme(panel.background = element_rect(fill = "#DEF5E5FF"),
-        axis.text = element_blank(),
-        theme(axis.title = element_blank()))
-
-```
-
-As we can see, there are hotspots near Harvard Ave in Allston, the North
-End, Downtown Crossing, Chinatown, and Newbury St.
-
-Seeing this distribution, I'm wondering if there are differences between
-health code inspections for restaurants that are heavily clustered vs.
-restaurants that are lightly distributed in their area. We will call the
-former "Suburban" restaurants and the latter "Urban" restaurants.
-
-**Suburban vs. Urban restaurants**
-
-To make this comparison, we will have to establish rules for what
-categorizes a restaurant as rural or urban. This will include all
-restaurants that were opened For this investigation, these will be the
-categories:
-
-[Urban:]{.underline} Has more than or equal to **10** other restaurants
-within a **100 meter** radius.
-
-[Suburban:]{.underline} Has less than **10** other restaurants within a
-**100 meter** radius.
-
-```{r urban}
-
-# Create circles around each rst
-
-buffer <- st_buffer(coords_sf$geometry, dist = 100)
-
-int <- st_intersects(buffer, coords_sf |> select(geometry))
-
-# Count how many row joins per buffer
-
-n_int <- lengths(int)
-
-# I want the index of all of the restaurants that have more than x amount of restaurants in this radius
-
-ind_rsts <- ind_rsts |>
-  mutate(
-    n_neighbor = n_int - 1,
-    urban_yn = (n_int - 1) >= 10
-  )
-
-ind_rsts <- st_as_sf(ind_rsts, coords = c("lon", "lat"), crs = 4326)
-
-mean(ind_rsts$urban_yn)
-hist(ind_rsts$n_neighbor)
-
-# Now lets plot all of the restaurants with their new designations
-
-ggplot() +
-  geom_sf(data = ind_rsts,
-          aes(color = urban_yn),
-          size = 1,
-          alpha = 0.3) +
-  geom_sf(data = bos, fill = NA, color = "black") +
-  labs(
-    title = "All Restaurants Colored By Urban Designation",
-    color = ""
-  ) +
-  scale_color_discrete(
-    labels = c("TRUE" = "Urban", "FALSE" = "Suburban")
-  )
-
-
-
-```
-
-**Hypothesis Tests**
-
-Now that we've designated each restaurant as Urban or Rural, we can run
-some hypothesis tests.
-
-Do urban or suburban restaurants have more failed health inspections? Is
-this difference significant?
-
-```{r chisq}
-
-#Expand individual restaurants and their urban/suburban designation to the full inspection report
-
-new_bos_insp <- bos_insp |>
-  left_join(
-    ind_rsts |>
-      st_drop_geometry() |>
-      select(address_full, urban_yn, n_neighbor),
-    by = "address_full"
-  ) |>
-  filter(
-    !if_any(c(urban_yn,viol_status), ~is.na(.))
-  )
-
-
-library("janitor")
-
-new_bos_insp |>
-  tabyl(urban_yn, viol_status) |>
-  adorn_totals("row") |>
-  adorn_percentages("row") |>
-  adorn_pct_formatting(digits = 1)
-
-
-chisq.test(table(new_bos_insp$viol_status, new_bos_insp$urban_yn))
-
-
-```
-
-This proportion table with marginal proportions shows us that Pass Rate
-for Urban restaurants is 0.8% higher than for Suburban restaurants. This
-means that suburban restaurants tend to fail health inspections more
-often than urban restaurants.
-
-To see whether this result is significant, we can conduct a Chi-Squared
-Test for independence. These are the assumptions:
-
--   Both Urban/Suburban status and Pass/Fail reports must be categorical
-    variables with 2+ distinct groups
-
--   Categories withineach designation must be mutually exclusive.
-
--   Each health inspection report must be independent of the others.
-
--   There must be more than 5 reports in each of the 4 categories.
-
-With a p-value of 6.969x10\^-10, we can reject the null hypothesis that
-the categories are independent from each another. [We have evidence that
-Urban/Suburban designation and health inspection pass rates are
-dependent on one another.]{.underline}
-
-Now we want to know the specific relationship between Urban/Suburban
-designation and Pass/Fail rates, if any.
-
-```{r logit}
-
-# Lets start by deconstructing the pass/fail rate into number of neighbor restaurants within a 400 meter radius, plotting the distribution
-
-ggplot() +
-  geom_histogram(data = ind_rsts, aes(x=n_neighbor), bins=39) +
-  labs(title = "Histogram of Neighbor Restaurants Within a 100 Meter Radius",
-       x = "Number of Neighbors",
-       y = "Frequency")
-
-# This distribiution is unimodal and smooth. Let's see if we can fit a logistic regression to this.
-
-new_bos_insp <- new_bos_insp |>
-  mutate(
-    viol_status = viol_status == "Fail",
-    viol_status_num = as.numeric(viol_status)
-  )
-
-model <- glm(viol_status ~ n_neighbor, data = new_bos_insp, family = binomial)
-
-coef(model)
-
-grid <- tibble(
-  n_neighbor = seq(
-    min(new_bos_insp$n_neighbor),
-    max(new_bos_insp$n_neighbor),
-    length.out = 300
-  ))
-
-
-grid <- grid |>
-  mutate(
-    pred_prob = predict(model, newdata = grid, type = "response")
-  )
-
-  
-ggplot() +
-  geom_jitter(data = new_bos_insp,
-              aes(x = n_neighbor, y = viol_status_num),
-              height = 0.1, alpha = 0.2) +
-  geom_line(data = grid,
-            aes(x = n_neighbor, y = pred_prob),
-            linewidth = 1.2)
-
- # curve <- 1/(1+e^-(0.225-0.00126*x))
-
-
-
-```
-
-The log-odds equation for this relationship is:
 
 ## Seun's Analysis
 
-### Categorize Violations
+### Top Violation Phrases
 
+```{r Top Violation Phrases}
+get_bigram_counts <- function(data_chunk) { 
+  data_chunk |>
+  filter(!is.na(violation_desc)) |>
+  unnest_tokens(bigram, violation_desc, token = "ngrams", n = 2) |>
+  separate(bigram, c("word1", "word2"), sep = " ") |> 
+  anti_join(stop_words, by = c("word1" = "word")) |> 
+  anti_join(stop_words, by = c("word2" = "word")) |>
+  unite(bigram, word1, word2, sep = " ") |>
+  count(bigram, sort = TRUE)
+}
+
+#partitioning data into 10 chunks for faster processing time
+all_segment_counts <- list()
+num_segments <- 10
+sample_fraction <- 0.1
+for (i in 1:num_segments) {
+  message(paste("Processing Segment", i, "of", num_segments))
+    data_segment <- inspections |>
+    sample_frac(sample_fraction)
+    segment_result <- get_bigram_counts(data_segment)
+    all_segment_counts[[i]] <- segment_result
+}
+
+top_bigrams <- all_segment_counts |>
+  bind_rows() |>
+  group_by(bigram) |>
+  summarize(n = sum(n), .groups = "drop") |>
+  arrange(desc(n))
+
+# Plot the top 20
+top_bigrams |>
+  slice_head(n = 20) |>
+  ggplot(aes(x = reorder(bigram, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels=label_number(scale = 1/1000, suffix = "k")) +
+  labs(
+    title = "Top 20 Specific Violation Phrases (Aggregated Sample)",
+    x = "Violation Phrase",
+    y = "Total Count (k)"
+  )
+```
+The chart reveals that the most frequent violations found by inspectors are not specific health emergencies but rather structural, maintenance, and sanitation compliance issues. 
+
+### Categorize Violations
 ```{r Categorize Violations}
 inspections_categorized <- inspections |>
   mutate(
@@ -654,8 +231,8 @@ inspections_categorized |>
   count(violation_category, sort = TRUE)
 ```
 
-### Categorize Restaurants
 
+### Categorize Restaurants
 ```{r Categorize Restaurants}
 inspections_categorized <- inspections_categorized |>
   mutate(
@@ -682,8 +259,17 @@ inspections_categorized |>
 ```
 
 ### Violation "Fingerprint" Plot
-
 ```{r Violation "Fingerprint" Plot}
+# Ensures bars stack hierarchically (High, Medium, Low)
+inspections_categorized <- inspections_categorized |>
+  mutate(
+    risk_level_standard = factor(
+      risk_level_standard, 
+      levels = c("High", "Medium", "Low", "Unknown"),
+      ordered = TRUE
+    )
+  )
+
 #Summary table
 violation_fingerprint <- inspections_categorized |>
   filter(
@@ -714,43 +300,10 @@ ggplot(violation_fingerprint,
     fill = "Violation Category"
   )
 ```
-
-Restaurant categories do disproportionately receive certain violation
-types. While "Sanitation & Cleaning" is a universal problem, specific
-models carry unique risks. The most important takeaway is that
-Sanitation & Cleaning (pink) and Pest Control (blue) are the two largest
-violation categories across nearly all restaurant types. However, the
-proportion of other key categories reveals important differences:
-
-Pest Control Dominance:
-
-Sushi/Japanese, Sandwich/Deli, and Bar/Pubs have the highest proportion
-of Pest Control violations, consistently making up over 25% of their
-total issues.
-
-Sanitation & Cleaning Focus:
-
-Coffee/Bakery, Pizza, and Chinese restaurants are highly dominated by
-Sanitation & Cleaning violations (pink), with this category often
-exceeding 40% of their total violations.
-
-Food Temperature Risk (The Outlier):
-
-Restaurant (General) is the only category where Food Temperature (teal)
-makes up the largest non-Sanitation/Pest share, hitting approximately
-25–30% of its violations. This suggests that businesses with diverse
-menus and complex cooking processes are uniquely prone to
-temperature-related failures.
-
-Cross-Contamination Risk:
-
-Mexican and Sandwich/Deli restaurants show a slightly elevated
-proportional risk for Cross-Contamination (red), often related to the
-high volume of raw preparation (e.g., cutting vegetables, preparing
-salsas, handling deli meats).
+Restaurant categories do disproportionately receive certain violation types. 
+The most important takeaway is that Sanitation & Cleaning (pink) and Pest Control (blue) are the two largest violation categories across nearly all restaurant types. 
 
 ### Standardize Inspection Types
-
 ```{r Standardize Inspection Types}
 inspections_categorized <- inspections_categorized |>
   mutate(
@@ -776,27 +329,13 @@ inspections_categorized |>
 ```
 
 ### Plot Severity by Inspection Type
-
 ```{r Plot Severity by Inspection Type}
-
 inspections_categorized |>
-  # 1. Filter the data (No changes needed here)
   filter(
     inspection_type_standard %in% c("Routine", "Complaint"),
     risk_level_standard != "Unknown"
-  ) |> # <--- PIPE TO THE NEXT STEP
-  
-  # 2. Mutate (Convert to Factor)
-  mutate(
-    risk_level_standard = factor(
-      risk_level_standard, 
-      # Set the desired hierarchical order
-      levels = c("High", "Medium", "Low"),
-      ordered = TRUE
-    )
-  ) |> # <--- CORRECT PIPE PLACEMENT (Outside the final mutate parenthesis)
-  
-  # 3. Plot proportions
+  ) |>
+  # NOTE: The mutate is now outside this chunk to save the factor conversion globally.
   ggplot(aes(x = inspection_type_standard, fill = risk_level_standard)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::label_percent()) +
@@ -809,23 +348,15 @@ inspections_categorized |>
   )
 ```
 
-The proportional plot clearly shows that Complaint-Driven inspections
-are more likely to find severe problems than Routine inspections12. The
-proportion of High Risk violations is visually larger in the Complaint
-column than in the Routine column13. This suggests the public is
-effective at reporting restaurants that pose an immediate public health
-risk.
+The proportional plot clearly shows that Complaint-Driven inspections are more likely to find severe problems than Routine inspections. The proportion of Medium Risk violations is visually larger in the Complaint column than in the Routine column. 
 
 ## Plot Violation Type by Inspection Type
-
 ```{r Plot Violation Type by Inspection Type}
 inspections_categorized |>
   filter(
     inspection_type_standard %in% c("Routine", "Complaint"),
     violation_category != "Other" # Remove 'Other' violations
   ) |>
-  
-  # Plot proportions
   ggplot(aes(x = inspection_type_standard, fill = violation_category)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::label_percent()) +
@@ -836,44 +367,17 @@ inspections_categorized |>
     y = "Proportion of Violations",
     fill = "Violation Category"
   ) +
-  coord_flip() # Flip axes to make categories easier to read
+  coord_flip() # Flipped axes to make categories easier to read
 ```
 
-When looking at violation type, Complaint inspections are
-disproportionately focused on Pest Control and Food Temperature issues.
-In contrast, Routine inspections find a much higher proportion of
-Sanitation & Cleaning and Facility/Maintenance problems. This suggests
-that patrons are quick to report visible signs of pests or temperature
-issues, while inspectors find more structural/hygiene problems during
-unannounced, comprehensive checks.
-
-Our analysis confirms two critical relationships:
-
-
-1.  **Business Model Risk:** The type of cuisine a restaurant serves creates a unique "fingerprint" of health risks (Q1). Complex cooking (Restaurant General) correlates with **Food Temperature** issues, while high-volume raw preparation (Sushi/Deli) correlates with **Pest Control** and **Cross-Contamination**.
-2.  **Inspection Type Bias:** Public complaints (Q2) are highly effective at flagging immediate public health threats, demonstrating a higher proportional incidence of **High Risk** violations and **Pest Control** problems compared to routine inspections.
+When looking at violation type, Complaint inspections are disproportionately focused on Pest Control and Food Temperature issues. In contrast, Routine inspections find a much higher proportion of Sanitation & Cleaning and Facility/Maintenance problems. This suggests that patrons are quick to report visible signs of pests or temperature issues, while inspectors find more structural/hygiene problems during unannounced, comprehensive checks.
 
 
 ## Arohi's question and analysis
 
 For my analysis, I am focusing on time-series data. As we saw in our Exploratory Data Analysis (EDA), the data is relatively recent, tracing back to around 2005 onwards, which works well for inspecting modern trends.
 
-My specific questions focuses on the trend of most frequent violations over time. A further expansion of that will lead into looking at the effect of environmental circumstances (such as COVID-19, for example, and what the trends might look like between inspection categories for 2015 vs 2020) on the frequency and distribution of food inspection violations, the severity of violations (by assigning severity into categories in the dataset, such as Fail, Closed, etc), composition of violations over time, and more.
-
-Time-series data is particularly interesting to our study because knowing the trends of violations year over year helps us determine its significance. It can help us deduce whether a violation is random or if its consistency year over year means that it is an overall global problem needed to be solved, which answers our original motivation for our group focusing on food inspection violations and continues our EDA findings.
-
 ```{r q1 - Most frequent violations per year}
-# Load libraries needed
-library(tidyverse)
-library(sf)
-library(lubridate)
-library(tidytext)
-library(scales)
-library(viridis)
-
-# Load the cleaned datafile 
-inspections <- read_csv("data/inspections_clean.csv")
-
 # Extract years and categorize violations appropriately
 inspections_over_time <- inspections |>
   mutate(
@@ -911,17 +415,13 @@ ggplot(violation_trends, aes(x = year, y = count, color = violation_category, gr
   scale_color_viridis_d(option = "C") + 
   scale_y_continuous(labels = comma) + 
   scale_x_continuous(
-    breaks = seq(2007, 27025, by = 2),    # scale years every two years to avoid overlap
+    breaks = seq(2007, 2025, by = 2), 
     labels = seq(2007, 2025, by = 2)
   ) +
   labs(title = "Trends in Most Frequent Violation Categories Over Time", x = "Year", y = "Number of Violations", color = "Violation Category") +
   theme_minimal()
 ```
 We can see that Other is the largest category for most frequent violations per year consistently since the data has been tracked. This makes sense because the tracking methodology is not universal between Boston, NYC, Chicago, and SF, as we found in our EDA, so Other encapsulates all the data inspections unmarked by the categories included.
-
-Following are Sanitation & Cleaning, which has been the second most frequent violation. This also aligns with our previous EDA findings as Sanitation & Cleaning is a prioritized factor of food inspection violations as it is a front-of-store violation (clean vs dirty restaurant). Cross-Contamination and Pest Control are among the least frequent violations over time.
-
-There is a large gap of empty data between 1900 and 2007, indicating that food inspection violations were introduced in 1900 but were not officially conducted at a large number until 2007, where other categories became introduced. Hence, we removed the data from 1900-2007 in order to close the gap between the years and unskew the data. 
 
 ```{r q2 - Most common violation in 2015 vs 2020}
 # Most common violation in 2015 and 2020, for example, to see the effect of environmental circumstances (COVID-19) on violation frequency. 
@@ -945,9 +445,7 @@ ggplot(violation_compare, aes(x = factor(year), y = count, fill = violation_cate
   labs(title = "Most Common Violation in 2015 vs 2020", x = "Year", y = "Number of Violations", fill = "Top Category") +
   theme_minimal()
 ```
-For an example, I looked at how environmental circumstances affected food inspection violations in that year. COVID-19 is an environmental circumstance that inevitably affected restaurants in the year 2020 due to stores and businesses, including restaurants, being forced to shut down. Appropriately, we looked at a comparison in the most common violations in that year to 5 years prior, in 2015, representing a more "normal" time.
 
-According to this data, our suspicions were confirmed — there were significantly less violations counted in the most common violation category (Other) in 2020 than in 2015. Specifically, it reduced by about 7,214 counts. This makes sense, as food inspectors were not able to inspect restaurants in-person in 2020 while COVID-19 occurred. This is also visually represented in the bar chart.
 
 ```{r q3 - All categories within 2015-2020, not just the most common}
 # Now, let's take a look at the side by side comparison in all violation categories within 2015 and 2020, not just the top one.
@@ -973,11 +471,8 @@ violation_diff <- violation_compare_all |>
 
 violation_diff
 ```
-In the first graph, we compared all the categories in 2015 vs 2020. In this one, we can see a similar trend in comparing all the categories inspection counts in 2015 vs 2020. The counts for food violation inspections were higher in 2015 compared to 2020, again due to lack of inspections of restaurants from COVID-19.
 
-Numerically, the largest change in violation category came from Other, which decreased by 7,214 counts. This is understandable as it is the largest category with the most common violations over time. Following are Facility/Maintenance with 6,979 less and Sanitation & Cleaning with 5,768 less. This also aligns with our original findings as these two were the runner-up categories of most common violations.
-
-Interestingly, the Food Temperature and Employee Hygiene categories increased by 85 and 6 counts respectively from 2015 to 2020. While low numbers, these are the only categories that increased in counts. Proportionally, it is especially interesting that Employee Hygiene increased considering it had no violations in 2015 and went up to 6 in 2020. This behavior can be explained by redistribution of prioritization of the food inspection system, where they were likely placed at a higher priority within those 5 years. Employee Hygiene may have also been introduced within those years, explaining the 0 --> 6 count jump.
+Interestingly, the Food Temperature and Employee Hygiene categories increased by 85 and 6 counts respectively from 2015 to 2020. While low numbers, these are the only categories that increased in counts. Proportionally, it is especially interesting that Employee Hygiene increased considering it had no violations in 2015 and went up to 6 in 2020. 
 
 ```{r q4 - Severity of violations}
 # We can also look at the violations from a severity perspective
@@ -1001,9 +496,8 @@ inspections_over_time |>
   labs(title = "Severity of Inspections in 2015 vs 2020", x = "Severity", y = "Count", fill = "Year") +
   theme_minimal()
 ```
-Looking at the severity of the food inspection violation cases, we see that Other holds the highest concentration of violations in 2015 and 2020 both. This means that there were other categories such as nonstandard outcomes (inconclusive, reopen) or administrative statuses (not inspected yet) that were more commonly attributed to restaurants by food inspectors restaurants as opposed to closed, failed, or passed. 
 
-Restaurants under the "Fail" severity category had the second highest count, which is concerning, especially since it exceeded the count of restaurants under the "Pass" severity category. There are no counts for the closed category, meaning in both 2015 and 2020 in all 4 major cities, there was not one restaurant that needed to be shut down due to extreme violation leading to a close.
+Restaurants under the "Fail" severity category had the second highest count, which is concerning, especially since it exceeded the count of restaurants under the "Pass" severity category. 
 
 ```{r q5 - Composition of violations per year}
 # How does the composition of all violations change year over year? 
@@ -1016,37 +510,11 @@ ggplot(violation_trends,aes(x = factor(year), y = count, fill = violation_catego
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-The composition of violations has been relatively steady over the past couple years. This means that over time, each category has sat in about the same place proportionally to the other categories.The Other category has consistently had the highest proportion of food inspection violations compared to the other categories, with the exception of 2020 when COVID-19 started and 2021 as it continued. Sanitation & Cleaning has had the second highest share proportionally, meaning these two categories are prominent in the food violation inspection space. The Cross-Contamination, Employee Hygiene, Facility/Maintenance, and Pest Control categories have consistently taken up the least amount of shares of food inspection violations over the years.
 
-```{r q6 - Inspection volume over time per city}
-# Filter date to count inspection volume over time per city 
-inspections |>
-  filter(inspection_date > "2000-01-01") |>
-  mutate(year = year(inspection_date)) |>
-  count(city_source, year) |>
-  
-# Plot
-ggplot(aes(x = year, y = n, color = city_source)) +
-geom_line() +
-labs(title = "Inspection Volume Over Time by City", x = "Year", y = "Total Inspections")
-```
-In our EDA, we looked at distribution of inspections over time, but not the volume. We can see that Boston has consistency leveled at ~50,000 inspections for the past decade. Chicago and San Francisco are lower, with under 25,000, and also are newer in that the data for their inspections is very recent. New York skyrocketed in inspections after 2020, which makes sense as most restaurants bounced back after COVID-19 and New York's appeal and popularity exceeds that of the other major metropolitan cities. 
-
-```{r q7 - Violations in Other year by year}
-#How has the total number of violations in the leading category, Other, performed year by year? Is it a new trend for this category to be the top, or has it been happening for a while over time? Rate of change inspection
-
-# Plot
-ggplot(most_frequent_by_year, aes(x = factor(year), y = count, fill = violation_category)) + geom_col() + 
-  scale_fill_viridis_d(option = "C") + 
-  labs(title = "Top Violation (Other) Total Count Each Year", x = "Year", y = "Number of Violations", fill = "Top Category") + 
-  theme_minimal() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-Broken down by year, we can see the leading category in most common violation inspections (which is Other) has been an increasing trend for the past couple years. This has been consistent over the past two decades, with the exception of 2020's effect of COVID-19. The unproportional rise in 2021 and 2022 is explained by the return of the economy post COVID-19, where restaurants and businesses began to reopen in society.
 
 ## Niki's Analysis
 ### Overall Monthly analysis
-```{r}
+```{r Overall Monthly analysis}
 # Categorizing the different inspections for later analysis
 inspections_cat <- inspections |>
   mutate(
@@ -1059,7 +527,7 @@ inspections_cat <- inspections |>
       str_detect(violation_desc, "floor|wall|ceiling|plumbing|ventilation|garbage") ~ "Facility/Maintenance",
       TRUE ~ "Other"
     )
-   )
+    )
 # Adding columns that tell me the month and what season that month correlates to
 monthly_season <- inspections_cat|>
   mutate(month = month(inspection_date), season = case_when(
@@ -1083,11 +551,10 @@ ggplot(month_count, aes(x = factor(month), y = count)) +
     x = "Month",
     y = "Number of Violations"
   )
-
-
 ```
-### By City Montly Analysis
-```{r}
+
+### Monthly Analysis by City
+```{r Monthly Analysis by City}
 # Food Inspection Violations by Month for each city
 monthly_city_count <- monthly_season|>
   group_by(city_source, month)|>
@@ -1102,10 +569,9 @@ ggplot(monthly_city_count) +
     y = "Number of Violations"
   )
 ```
-For this part of the analysis, we are looking at which months food violations tend to peak.The first plot shows the distribution of food inspection violations across all cities over the course of the year. Violations tend to peak in March and October, with October having the highest total number of violations. The second plot breaks the data down by city. Each city follows a similar pattern, with peaks in March and October, consistent with the overall trend observed in the first plot.
 
 ### Overall Seasonal Analysis
-```{r}
+```{r Seasonal Analysis}
 # Food Inspection Violations by Seasons over all cities
 seasonal_count <- monthly_season|>
   group_by(season)|>
@@ -1117,12 +583,11 @@ ggplot(seasonal_count, aes(x = season, y = count)) +
     x = "Seasons",
     y = "Number of Violations"
   )
-
 ```
 
 
-### By City Season Analysis
-```{r}
+### Season Analysis by City
+```{r Season Analysis by City}
 # Food Inspection Violations by Season for each city
 seasonal_city_count <- monthly_season|>
   group_by(city_source, season)|>
@@ -1139,12 +604,10 @@ ggplot(seasonal_city_count,
     y = "Number of Violations"
   )
 ```
-For this part of the analysis, we are looking at which seasons food violations tend to peak. In the third plot, it shows the distribution of food inspection violations across all cities over the seasons. Violations tend to peak in spring with fall being season with the second most amount of food violations. The fourth plot breaks it down by city. Each city follows a similar pattern, with spring being the season with the most violations, consistent with the overall trend observed in the first plot.
 
 
-
-```{r}
-# Monthly Trends for Each Violation Category
+### Monthly Trends for Each Violation Category
+```{r Violations Over Months}
 monthly_violation_counts <- monthly_season|>
   filter(!is.na(season),!is.na(violation_category))|>
   group_by(violation_category, month)|>
@@ -1164,14 +627,12 @@ ggplot(monthly_violation_counts,
     x = "Month",
     y = "Number of Violations"
   )
-
 ```
-After examining overall and city-level monthly and seasonal trends, we analyzed each violation category separately to determine when different types of violations tend to peak. The figure shows that most categories reach their highest levels in October, suggesting a strong fall seasonal effect across multiple types of food safety risks.
 
-An important exception is Employee Hygiene, which peaks in April rather than October. This may reflect seasonal staffing changes, onboarding of new employees in the spring, or changes in enforcement focus. Overall, this suggests that while many violations follow a common seasonal pattern, some categories exhibit distinct timing, which could be useful for targeted inspections and interventions.
+An important exception is Employee Hygiene, which peaks in April rather than October. This may reflect seasonal staffing changes, onboarding of new employees in the spring, or changes in enforcement focus. 
 
-```{r}
-# Seasonal Distribution for Each Violation Category
+### Seasonal Distribution for Each Violation Category
+```{r Violations Over Seasons}
 season_violation_counts <- monthly_season|>
   filter(!is.na(season),!is.na(violation_category))|>
   group_by(violation_category, season)|>
@@ -1187,11 +648,6 @@ ggplot(season_violation_counts,
     x = "Season",
     y = "Number of Violations"
   )
-
-
 ```
-The figure above shows the distribution for each violation category during each season. The figure shows that most categories reach their highest levels in spring, which is interesting to note as the monthly breakdown showed that most of the violations peaked in month of October. This suggests that even though the most violation occur in October, violations build up during the spring time.
 
-An important exception is Pest Control and Food Temperatrure. Pest control violations peak in the fall, likely because colder outdoor temperatures drive rodents and insects indoors, increasing the risk of infestations in food establishments. Food temperature violations remain relatively consistent across seasons, with a slight increase in the winter, which may be related to increased reheating practices and greater reliance on hot food holding during colder months. Overall, these trends suggest that food safety risks fluctuate seasonally and differently by violation type, reinforcing the importance of timing inspections to periods of elevated risk.
-
-
+An important exception is Pest Control and Food Temperatrure. Pest control violations peak in the fall, likely because colder outdoor temperatures drive rodents and insects indoors, increasing the risk of infestations in food establishments. 
