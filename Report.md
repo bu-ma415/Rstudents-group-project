@@ -21,7 +21,7 @@ type of establishment, type of violation, and other variables.
 research and analyze an individual question related to common food establishment violations. 
 Our research questions are as follows:
 
-Q1. What is the pattern of violations geographically within each city? For example, what zipcodes have the most prominent one?
+Q1. What is the pattern of violations geographically within Boston? What is the distribution of restaurants within the city? Is there any correlation between restaurant density (the amount of neighbor restaurants within a certian radius) and food inspection pass rates?
 
 Q2. Do specific categories of restaurants (e.g., 'Pizza', 'Sushi', 'Coffee Shop') disproportionately receive certain categories of violations (e.g., 'Pest Control', 'Food Temperature', 'Employee Hygiene')?
   
@@ -160,6 +160,15 @@ inspection frequency per restaurant, neighborhood demographics, and more. Becaus
 With additional time, richer contextual data, and a depper standardization between cities and terms, we would build a more comprehensive and complex analysis of the trends and findings related to food inspection.
 
 ## Conclusion
+
+This investigation examined food inspection records from several different angles: geospatial calculations, bigram patterns via restaurant type, seasonal trends through violation category, and longitudinal trends over ~20 years. In totality, our findings revealed a wealth of information about 
+
+Though there were several notable limitations, conclusions can still be drawn from each analysis
+
+A restaurant’s location in Boston is associated with its overall likelihood of passing health inspections, specifically when considering how densely populated areas are with restaurants.
+
+
+
 
 ## References
 
