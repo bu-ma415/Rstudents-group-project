@@ -626,15 +626,19 @@ hist(vln_join$log_n_inspections)
 
 vln_join <- inner_join(ind_rsts, vln_data, by = "address_full") |>
   mutate(
-    log_n_inspections = log(n_inspections)
+    log_n_inspections = log(n_inspections),
+    trans_n_neighbor = sqrt(n_neighbor)
   )
-
-
 
 
 ggplot(data = vln_join, aes(x = n_neighbor, y = pass_rate)) +
   geom_point(aes(color = log_n_inspections)) +
-  geom_smooth(method = "gam", formula = y ~ s(x, k = 150), color = "red2") +
+  geom_smooth(method = "gam",
+              formula = y ~ s(x, k = 50),
+              se = TRUE,
+              fill = "lightgreen",
+              alpha = 0.6,
+              color = "red2") +
   labs(
     title = "Relationship Between Neighbors and Pass Rate",
     x = "Number of neighbors",
@@ -653,10 +657,23 @@ ggplot(data = vln_join, aes(x = n_neighbor, y = pass_rate)) +
                "400",
                "3000")
   )
+  
+
 
 
 
 ```
+
+This graph corroborates the information we found from the Chi-Squared
+test. There is a slight positive trend between the number of neighbors
+and the pass rate for health inspections, seen by the positive trend of
+the spline. Though slight, we are very confident that this trend exists,
+seen by the skinniness of the green prediction band. The band gets
+larger as the number of neighbors increases, but the standard error
+never exceeds 2.5%. The amount of inspections each restaurant has had
+total never does not seem to differ with number of neighbors, but does
+differ slightly by pass rate. The larger the number of inspections a
+restaurants has, the more they tend to hover around a 50% pass rate.
 
 ## Seun's Analysis
 
