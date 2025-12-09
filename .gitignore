@@ -38,4 +38,12 @@ Boston Shapefiles/
 #data source csv files
 data/
 .DS_Store
+<<<<<<< HEAD
 Rstudentsproject.nb.html
+=======
+
+Rstudentsproject.nb.html
+
+
+
+>>>>>>> b698472a63f53d4ad37981be2ca7df91bacd411b
