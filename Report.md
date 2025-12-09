@@ -1,5 +1,8 @@
 ---
 title: "Final Report for Rstudents"
+output:
+  html_document:
+    df_print: paged
 ---
 ## Introduction
   In September 2025, the Bedford Board of Health made the decision to suspend Bamboo's restaurant permit.
@@ -34,37 +37,105 @@ We used several libraries to complete data cleaning and visualization including 
 
 ## Exploratory Data Analysis
 
-## Results
-# Q1
-# Q2
-# Q3
-![](images/monthallcities.png)
-In order to figure when violations are peaking, we first looked at the amount food violations over the course of the year.The first plot shows the distribution of food inspection violations across all cities over the course of the year. 
-Violations tend to peak in March and October, with October having the highest number of violations with around 150k violations. 
-![](images/monthbycities.png)
-From there we wanted to look if there was any differences between each of the cities. The second plot breaks the data down by city, and we found all of them follow a similar pattern, with peaks in March and October.
-This is consistent with the overall trend observed in the previous plot.
-![](images/seasonallcities.png)
-For this part of the analysis, we looked at which seasons food violations tend to peak. This plot shows the distribution of food inspection violations across all cities over the seasons. 
-Unlike the monthly plots, this plot found that the most violations were peaking in the season of spring. This suggests violations seem to follow a seasonal trend, with more problems in spring, rather than being random spikes in individual months. 
-![](images/seasonbycities.png)
-We further broke down the data by city and observed that each of the cities followed a similar pattern, with spring being the season with the most violations.
-This is consistent with the overall trend observed in the previous plot.
-![](images/monthvio.png)
-After examining each violation category separately, we observe that different types of violations peak at different times throughout the year. Cross-Contamination, Sanitation & Cleaning, and Pest Control all reach their highest levels in October, suggesting these categories may share common drivers during this month.
-However, other categories follow distinct monthly patterns. Employee Hygiene peaks notably in April rather than fall, potentially reflecting spring staffing changes or training cycles. 
-Food Temperature shows its highest violations in October but maintains elevated levels across several months. Facility/Maintenance and Other violations exhibit bimodal patterns with comparable peaks in both March and October, 
-indicating these issues arise at two distinct points in the annual cycle. These varied monthly patterns suggest that different violation types respond to different temporal factors, 
-which could inform more strategic scheduling of targeted inspections throughout the year
-![](images/seasonvio.png)
-The seasonal distribution reveals a clear pattern: six of the seven violation categories reach their highest levels during spring, despite October (a fall month) showing the highest violations in the monthly analysis. 
-This apparent contradiction is resolved when considering that spring spans three months of elevated activity, while October represents a single peak month within fall. 
-The cumulative effect across March, April, and May results in spring having the highest total violations for most categories.
-Pest Control is the notable exception, peaking in fall rather than spring. This likely reflects colder outdoor temperatures driving rodents and insects indoors, 
-increasing infestation risks in food establishments. Food Temperature violations show less seasonal variation than other categories, remaining fairly consistent throughout the year with a slight peak in summer.
-Overall, spring emerges as the period with the most violations across nearly all categories, suggesting it should be a priority time for inspections and preventive measures.
+### Data Integrity and Standardization
 
-# Q4
+Our initial analysis confirmed the combined dataset of over 1.4 million records is large and recent (mostly post-2005), but critically **imbalanced**  (Boston accounts for over half the data). This required our team to rely exclusively on **proportional analysis** for all city comparisons to ensure fair results.
+
+We successfully transformed disparate risk columns into a unified, easy-to-understand Risk Level variable:
+
+| City | Original Column Examples | Standardized To |
+| :--- | :--- | :--- |
+| **Boston** | `***`, `**`, `*` | High, Medium, Low | 
+| **New York City** | `Critical`, `Not Critical` | High, Low |
+| **Chicago** | `Risk 1 (High)`, `Risk 2 (Medium)` | High, Medium, Low |
+
+### Key Cross-City Findings
+
+| Finding | Summary | Plot Reference |
+| :--- | :--- | :--- |
+| **Inspection Outcome Bias** | Boston and San Francisco log the highest proportion of "Fail" outcomes, while New York City's system is highly skewed toward "Pass" (Grade A). This confirms that "Pass" and "Fail" definitions are not comparable between cities. |  ![](images/BasicPlots-1.png)  |
+| **Risk Differences** | Chicago and New York log a dramatically higher proportion of **High Risk** violations than Boston, demonstrating different regulatory definitions of risk. |  ![](images/CityComparisons-2.png) |
+| **Score System** | New York uses a demerit system (lower score is better), while San Francisco uses a points-based system (higher score is better). Our logic successfully mapped these opposites into consistent outcomes. | ![](images/CityComparisons-3.png) |
+---
+
+## Results
+
+### Q1. Geographic Violation Patterns (Gian's Analysis)
+
+The geographic analysis focused on **Boston** to identify localized risk factors by comparing clustered ("Urban") restaurants to dispersed ("Suburban") restaurants.
+
+* **Hotspot Identification:** The restaurant density map revealed significant clustering near major metropolitan areas like the North End, Downtown Crossing, and Chinatown. 
+
+* **Urban/Suburban Pass Rate Test:** A two-category comparison was conducted, designating a restaurant as "Urban" if it had 10 or more neighbors within a 100-meter radius, and "Suburban" otherwise.
+    * **Finding:** The proportion table showed that the Pass Rate for Urban restaurants was **0.8% higher** than for Suburban restaurants. This suggests suburban restaurants tend to fail health inspections slightly more often.
+    * **Significance:** A Chi-Squared Test yielded a p-value of $6.969 \times 10^{-10}$, allowing us to reject the null hypothesis. We have evidence that Urban/Suburban designation and health inspection pass rates **are dependent on one another**.
+    * ![](images/hotspot_map.png)
+
+* **???????? Detailed Relationship:** A logistic regression analysis (GAM smooth) exploring the relationship between the number of neighbors and the restaurant's average pass rate confirmed the overall trend: there is a slight negative correlation between restaurant clustering and failure rates. 
+
+### Q2. Restaurant Risk & Inspection Types (Seun's Analysis)
+
+#### 2a. Violation 'Fingerprints' by Restaurant Category
+
+To answer whether specific cuisine types face unique risks, we categorized violations and restaurants. Due to memory limits, the specific text analysis was run using a segmented, aggregated 10% sample of the data.
+
+* **Top Violation Themes:** The final bigram analysis, which removed common stopwords, revealed that the most frequent violations found by inspectors are not specific health emergencies but **structural, maintenance, and compliance issues** (e.g., "food contact," "contact surfaces," "walls ceilings"). This result validated the necessity of grouping all violations into high-level categories (Sanitation, Pest Control, etc.). 
+* **The Fingerprint:** The proportional plot shows a distinct risk profile for each cuisine type: 
+    * **Food Temperature Risk:** **Restaurant (General)** is the clear outlier, where Food Temperature makes up the largest non-Sanitation/Pest share (~25–30% of its violations), suggesting high risk in complex kitchens.
+    * **Pest Control Dominance:** **Sushi/Japanese, Sandwich/Deli, and Bar/Pubs** have the highest *proportion* of **Pest Control** violations (over 25% of their issues).
+    * **Sanitation Focus:** **Coffee/Bakery, Pizza, and Chinese** restaurants are highly dominated by **Sanitation & Cleaning** violations (often exceeding 40%).
+
+![](images/fingerprint.png)
+
+#### 2b. Severity Difference: Complaint vs. Routine Inspections
+
+* **Violation Severity:** The proportional plot of risk level (High, Medium, Low) confirms that **Complaint-Driven inspections** are significantly more likely to find severe problems. The proportion of **High Risk** violations is visually larger in the Complaint column than in the Routine column. This suggests the public is effective at reporting restaurants that pose an immediate public health risk. 
+* **Violation Type:** When comparing violation categories: 
+    * **Complaint inspections** are disproportionately focused on **Pest Control** and **Food Temperature** issues.
+    * **Routine inspections** find a much higher proportion of **Sanitation & Cleaning** and **Facility/Maintenance** problems.
+    * This suggests patrons report visible signs of pests, while inspectors uncover structural/hygiene problems during comprehensive checks.
+
+![](images/Violation_severity.png)
+
+### Q3. Temporal and Seasonal Patterns (Niki's Analysis)
+
+The temporal analysis investigated when and why food inspection violations occur throughout the year, focusing on monthly and seasonal trends across the four major cities.
+
+#### Monthly and Seasonal Peaks
+
+* **Overall Monthly Peak:** The distribution of food inspection violations across all cities shows a strong bimodal trend, peaking in **March** and **October**. **October** records the highest single monthly volume of violations (around 150k violations).
+![](images/monthallcities.png)
+* **City Consistency:** All cities follow this bimodal pattern of peaks in March and October, confirming a **consistent annual inspection cycle** across the entire dataset .
+* **Seasonal Peak:** Despite the strong October peak, the cumulative violation count is highest in **Spring** . ![](images/seasonbycities.png)
+This apparent contradiction is resolved when considering that **Spring spans three months of elevated activity** (March, April, and May), while October represents a single, isolated peak month in Fall. The cumulative effect across the three Spring months results in Spring having the highest total violations overall .
+
+#### Violation Specificity
+
+* **Pest Control:** **Pest Control** violations peak seasonally in **Fall** . This likely reflects colder outdoor temperatures driving rodents and insects indoors, increasing infestation risks in food establishments.
+* **Employee Hygiene Outlier:** **Employee Hygiene** peaks notably in **April**, potentially reflecting spring staffing changes or training cycles .
+* **Facility/Maintenance and Other:** These violations exhibit bimodal patterns with comparable peaks in both March and October, indicating these issues arise at two distinct points in the annual cycle.
+* **Conclusion:** **Spring** emerges as the period with the highest overall risk, necessitating prioritization for comprehensive inspections and preventive measures.
+![](images/seasonvio.png)
+---
+
+
+### Q4. Longitudinal Trends (Arohi's Analysis)
+
+The time series analysis examined how the frequency of violations changed over the past two decades, with a focus on the environmental impact of COVID-19 (2015 vs. 2020).
+
+* **Overall Time Trend:** The **"Other"** category (reflecting non-standard codes and administrative statuses) has consistently been the most frequent violation type, followed by **Sanitation & Cleaning**. Cross-Contamination and Pest Control are among the least frequent violations over time .
+    * Broken down by year, the leading category in most common violation inspections (**Other**) has been an increasing trend for the past couple years. This has been consistent over the past two decades, with the exception of 2020's effect of COVID-19. The unproportional rise in 2021 and 2022 is explained by the return of the economy post COVID-19, where restaurants and businesses began to reopen in society .
+
+* **Composition of Violations:** The proportional composition of all violation categories has been relatively steady over the past couple of years, meaning each category has held a similar share proportionally to the others . The large shift in total volume is primarily driven by the **Other** and **Sanitation & Cleaning** categories, which are the most prominent in the inspection space.
+![](images/vio_prop_time.png)
+
+* **COVID-19 Impact (2015 vs. 2020):** Inspection counts in 2020 dropped significantly compared to 2015 across almost all categories due to pandemic-related shutdowns and restricted in-person activity .
+    * **Largest Decreases:** The largest numerical decreases were seen in the highest-volume categories: **Other** (decreased by 7,214 counts), **Facility/Maintenance** (decreased by 6,979 counts), and **Sanitation & Cleaning** (decreased by 5,768 counts).
+    * **Unique Increases:** The **Food Temperature** (increased by 85 counts) and **Employee Hygiene** (increased by 6 counts) categories were the *only* categories to see a slight numerical *increase* from 2015 to 2020. This behavior suggests that during the crisis, the limited inspections conducted were highly prioritized, focusing on critical risks like safe temperatures and employee hygiene protocols.
+![](images/viocat_overtime.png)
+
+* **Severity Comparison:** Looking at the severity of violation cases (Fail, Pass, Violation, Closed), the **Other** category consistently holds the highest concentration of violations, reflecting administrative statuses or nonstandard outcomes. Notably, the **Fail** severity category had the second highest count, exceeding the count of the **Pass** severity category in both 2015 and 2020 .
+![](images/inspec_severity15-20.png)
 
 ## Limitations
 

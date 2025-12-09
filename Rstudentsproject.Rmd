@@ -15,7 +15,6 @@ library(lubridate)
 library(tidytext)
 library(scales)
 library(viridis)
-library(ggplot2)
 
 # Load the single, final clean file
 inspections <- read_csv("data/inspections_clean.csv")
@@ -83,9 +82,8 @@ ggplot(inspections, aes(x = city_source, y = inspection_score)) +
 
 ggplot(inspections, aes(x = inspection_outcome, y = inspection_score, fill = city_source)) +
   geom_boxplot() + 
-  facet_wrap(~ city_source) + #show how our standardized Pass/Fail categories line up with the numeric scores
-    labs(title = "Score Distributions by City (Standardized")
-
+  facet_wrap(~ city_source) + 
+    labs(title = "Score Distributions by City (Standardized)")
 ```
 After establishing the overall shape of our data, we drilled down to compare the four cities. This is where our standardization efforts provide their first major insights, revealing that the cities have vastly different inspection profiles.
 
@@ -106,23 +104,22 @@ This analysis validates our standardization and proves that the two scoring syst
 
 ### Exploring Fail Rates Over Time 
 ```{r Exploring Fail Rates}
-
 # Create a summary table
 fails_by_year <- inspections |>
-  filter(inspection_date > "2000-01-01") |> # filter out outlier (probably wrong) dates
+  filter(inspection_date > "2000-01-01") |> 
   mutate(year = year(inspection_date)) |>
   group_by(city_source, year) |>
   summarize(
     fail_rate = mean(inspection_outcome == "Fail", na.rm = TRUE),
     total_inspections = n()
   ) |>
-  filter(total_inspections > 100) # Remove years with tiny data
+  filter(total_inspections > 100) 
 
 # Plot the summary
 ggplot(fails_by_year, aes(x = year, y = fail_rate, color = city_source)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
-  scale_y_continuous(labels = label_percent()) +     # format y-axis as percentage
+  scale_y_continuous(labels = label_percent()) +     
   scale_color_viridis_d() +                         
   labs(
     title = "Fail Rate Over Time by City", 
@@ -133,19 +130,19 @@ ggplot(fails_by_year, aes(x = year, y = fail_rate, color = city_source)) +
 
 # Least Successful zipcodes in each city in the dataset
 fails_by_zip <- inspections |>
-  filter(inspection_date > "2000-01-01") |> # Good idea to filter bad dates
+  filter(inspection_date > "2000-01-01") |> 
   group_by(city_source, zip_code) |>
   summarize(
     fail_rate = mean(inspection_outcome == "Fail", na.rm = TRUE),
     total_inspections = n()
   ) |>
-  filter(total_inspections > 100) |> # Only include zips with over 100 inspections for points with depth
+  filter(total_inspections > 100) |> 
   ungroup()
 
 # Summary table for zip codes
 fails_by_zip |>
-  group_by(city_source) |>      # Group by city
-  top_n(3, fail_rate) |>        # Find the top 3 in each city
+  group_by(city_source) |>      
+  top_n(3, fail_rate) |>        
   ungroup() |>
     mutate(
     zip_code = tidytext::reorder_within(zip_code, fail_rate, city_source)
@@ -153,8 +150,8 @@ fails_by_zip |>
 
   ggplot(aes(x = zip_code, y = fail_rate, fill = city_source)) +
   geom_col() +
-  tidytext::scale_x_reordered() + # This makes the labels plot correctly
-  facet_wrap(~ city_source, scales = "free") + #Create 4 separate charts
+  tidytext::scale_x_reordered() + 
+  facet_wrap(~ city_source, scales = "free") + 
   coord_flip() +
   labs(
     title = "Top 3 Zip Codes with Highest Fail Rate by City",
@@ -162,7 +159,6 @@ fails_by_zip |>
     y = "Fail Rate"
   ) +
   theme(legend.position = "none")
-
 ```
 
 Following our city-level comparisons, we moved into our first multivariate analysis to answer our research questions about where and when violations occur.
@@ -192,33 +188,6 @@ New York: 11436, 11428
 
 San Francisco: 94134, 94118
 
-### Boston Zipcodes Map
-
-```{r eval=FALSE, include=FALSE}
-bos_insp <- inspections |>
-  filter(city_source == "Boston")
-bos_shp <- st_read("Boston Shapefiles/ZIP_Codes.shp")
-
-bos_borders <- bos_shp |> st_union() |>
-  st_buffer(.5)
-ggplot(bos_borders) +
-  geom_sf(data=bos, aes(fill = ZIP5))
-
-
-# Density map of restaurants in each zipcode
-rstnt_density <- bos_insp |>
-  group_by(restaurant_name) |>
-  group_by(zip_code) |>
-  mutate(n_per_zip = N())
-
-bos$zip_code <- bos$ZIP5
-
-bos <- full_join(rstnt_density, bos, by = zip_code)
-
-ggplot(bos_borders) +
-  geom_sf(data=bos, aes(fill_n_per_zip))
-```
-
 ### Days of the week that see the most inspections
 
 ```{r Inspections by Day of Week}
@@ -246,7 +215,10 @@ The long, flat tail on the right is highly significant. While most businesses ar
 
 ## Answering Research Questions
 
-## Seun's Analysis 
+## Gian's Analysis
+
+
+## Seun's Analysis
 
 ### Top Violation Phrases
 
@@ -255,8 +227,8 @@ get_bigram_counts <- function(data_chunk) {
   data_chunk |>
   filter(!is.na(violation_desc)) |>
   unnest_tokens(bigram, violation_desc, token = "ngrams", n = 2) |>
-  separate(bigram, c("word1", "word2"), sep = " ") |> # separates the bigram into two columns for filtering
-  anti_join(stop_words, by = c("word1" = "word")) |> # removing 'stop words' for more meaningful analysis
+  separate(bigram, c("word1", "word2"), sep = " ") |> 
+  anti_join(stop_words, by = c("word1" = "word")) |> 
   anti_join(stop_words, by = c("word2" = "word")) |>
   unite(bigram, word1, word2, sep = " ") |>
   count(bigram, sort = TRUE)
@@ -280,8 +252,6 @@ top_bigrams <- all_segment_counts |>
   summarize(n = sum(n), .groups = "drop") |>
   arrange(desc(n))
 
-#head(top_bigrams, 10)
-
 # Plot the top 20
 top_bigrams |>
   slice_head(n = 20) |>
@@ -292,9 +262,8 @@ top_bigrams |>
   labs(
     title = "Top 20 Specific Violation Phrases (Aggregated Sample)",
     x = "Violation Phrase",
-    y = "Total Count"
+    y = "Total Count (k)"
   )
-
 ```
 The chart reveals that the most frequent violations found by inspectors are not specific health emergencies but rather structural, maintenance, and facility compliance issues. The most frequent phrases are too broad to be actionable (like "food contact"). This proves that you must group them into high-level categories (Sanitation, Pest Control, etc.) to get meaningful insights. The consistent appearance of "food contact," "contact surfaces," and "surfaces clean" hints that general Sanitation & Cleaning may be the single largest category of violation by count, regardless of the city or inspection type.
 
@@ -347,6 +316,17 @@ inspections_categorized |>
 
 ### Violation "Fingerprint" Plot
 ```{r Violation "Fingerprint" Plot}
+# Ensure bars stack hierarchically (High, Medium, Low)
+inspections_categorized <- inspections_categorized |>
+  mutate(
+    risk_level_standard = factor(
+      risk_level_standard, 
+      levels = c("High", "Medium", "Low", "Unknown"),
+      ordered = TRUE
+    )
+  )
+
+#Summary table
 #Summary table
 violation_fingerprint <- inspections_categorized |>
   filter(
@@ -377,7 +357,6 @@ ggplot(violation_fingerprint,
     fill = "Violation Category"
   )
 ```
-
 Restaurant categories do disproportionately receive certain violation types. While "Sanitation & Cleaning" is a universal problem, specific models carry unique risks. 
 The most important takeaway is that Sanitation & Cleaning (pink) and Pest Control (blue) are the two largest violation categories across nearly all restaurant types. However, the proportion of other key categories reveals important differences:
 
@@ -424,20 +403,12 @@ inspections_categorized |>
 
 ### Plot Severity by Inspection Type
 ```{r Plot Severity by Inspection Type}
-
 inspections_categorized |>
   filter(
     inspection_type_standard %in% c("Routine", "Complaint"),
     risk_level_standard != "Unknown"
   ) |>
-    mutate(
-    risk_level_standard = factor(
-      risk_level_standard, 
-      # Set the desired hierarchical order
-      levels = c("High", "Medium", "Low"),
-      ordered = TRUE
-    )
-  ) |>
+  # NOTE: The mutate is now outside this chunk to save the factor conversion globally.
   ggplot(aes(x = inspection_type_standard, fill = risk_level_standard)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::label_percent()) +
@@ -489,17 +460,6 @@ My specific questions focuses on the trend of most frequent violations over time
 Time-series data is particularly interesting to our study because knowing the trends of violations year over year helps us determine its significance. It can help us deduce whether a violation is random or if its consistency year over year means that it is an overall global problem needed to be solved, which answers our original motivation for our group focusing on food inspection violations and continues our EDA findings.
 
 ```{r q1 - Most frequent violations per year}
-# Load libraries needed
-library(tidyverse)
-library(sf)
-library(lubridate)
-library(tidytext)
-library(scales)
-library(viridis)
-
-# Load the cleaned datafile 
-inspections <- read_csv("data/inspections_clean.csv")
-
 # Extract years and categorize violations appropriately
 inspections_over_time <- inspections |>
   mutate(
@@ -537,7 +497,7 @@ ggplot(violation_trends, aes(x = year, y = count, color = violation_category, gr
   scale_color_viridis_d(option = "C") + 
   scale_y_continuous(labels = comma) + 
   scale_x_continuous(
-    breaks = seq(2007, 27025, by = 2),    # scale years every two years to avoid overlap
+    breaks = seq(2007, 2025, by = 2), 
     labels = seq(2007, 2025, by = 2)
   ) +
   labs(title = "Trends in Most Frequent Violation Categories Over Time", x = "Year", y = "Number of Violations", color = "Violation Category") +
@@ -685,7 +645,7 @@ inspections_cat <- inspections |>
       str_detect(violation_desc, "floor|wall|ceiling|plumbing|ventilation|garbage") ~ "Facility/Maintenance",
       TRUE ~ "Other"
     )
-   )
+    )
 # Adding columns that tell me the month and what season that month correlates to
 monthly_season <- inspections_cat|>
   mutate(month = month(inspection_date), season = case_when(
@@ -709,9 +669,8 @@ ggplot(month_count, aes(x = factor(month), y = count)) +
     x = "Month",
     y = "Number of Violations"
   )
-
-
 ```
+
 ### By City Montly Analysis
 ```{r}
 # Food Inspection Violations by Month for each city
@@ -743,7 +702,6 @@ ggplot(seasonal_count, aes(x = season, y = count)) +
     x = "Seasons",
     y = "Number of Violations"
   )
-
 ```
 
 
@@ -768,9 +726,8 @@ ggplot(seasonal_city_count,
 For this part of the analysis, we are looking at which seasons food violations tend to peak. In the third plot, it shows the distribution of food inspection violations across all cities over the seasons. Violations tend to peak in spring with fall being season with the second most amount of food violations. The fourth plot breaks it down by city. Each city follows a similar pattern, with spring being the season with the most violations, consistent with the overall trend observed in the first plot.
 
 
-
+### Monthly Trends for Each Violation Category
 ```{r}
-# Monthly Trends for Each Violation Category
 monthly_violation_counts <- monthly_season|>
   filter(!is.na(season),!is.na(violation_category))|>
   group_by(violation_category, month)|>
@@ -790,14 +747,13 @@ ggplot(monthly_violation_counts,
     x = "Month",
     y = "Number of Violations"
   )
-
 ```
 After examining overall and city-level monthly and seasonal trends, we analyzed each violation category separately to determine when different types of violations tend to peak. The figure shows that most categories reach their highest levels in October, suggesting a strong fall seasonal effect across multiple types of food safety risks.
 
 An important exception is Employee Hygiene, which peaks in April rather than October. This may reflect seasonal staffing changes, onboarding of new employees in the spring, or changes in enforcement focus. Overall, this suggests that while many violations follow a common seasonal pattern, some categories exhibit distinct timing, which could be useful for targeted inspections and interventions.
 
+### Seasonal Distribution for Each Violation Category
 ```{r}
-# Seasonal Distribution for Each Violation Category
 season_violation_counts <- monthly_season|>
   filter(!is.na(season),!is.na(violation_category))|>
   group_by(violation_category, season)|>
@@ -813,8 +769,6 @@ ggplot(season_violation_counts,
     x = "Season",
     y = "Number of Violations"
   )
-
-
 ```
 The figure above shows the distribution for each violation category during each season. The figure shows that most categories reach their highest levels in spring, which is interesting to note as the monthly breakdown showed that most of the violations peaked in month of October. This suggests that even though the most violation occur in October, violations build up during the spring time.
 
