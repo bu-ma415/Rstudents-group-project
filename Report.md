@@ -171,7 +171,7 @@ Violation types also varied by season. Pest Control violations peaked in the fal
 
 These findings point to several policy implications. For immediate risk mitigation, more resources should be directed toward complaint-driven inspections and spring inspections, both of which uncover higher rates of severe violations. For prevention, pest-control efforts should be expanded during the fall and for bars/pubs year-round. Because Sanitation & Cleaning violations are consistently the most common—and Food Temperature issues are especially common in restaurants—both immediate and long-term interventions should prioritize these areas, including strengthened employee training. Location-based pass-rate differences exist but are small and should not be prioritized.
 
-FFuture research should focus on inspection methodology, including training protocols and inspector-level consistency. Understanding how inspections are conducted across restaurant types, locations, and seasons would strengthen the reliability of these findings and support more precise, effective policy interventions.
+Future research should focus on inspection methodology, including training protocols and inspector-level consistency. Understanding how inspections are conducted across restaurant types, locations, and seasons would strengthen the reliability of these findings and support more precise, effective policy interventions.
 
 
 ## References
