@@ -18,7 +18,7 @@ Food establishment inspection datasets used in this project:
 | `Rstudentsproject.Rmd` | Main analysis notebook containing all R code for EDA, modeling, and visualization. Serves as the full reproducible script.        | Tracked by Git.                                      |
 | `Report.md`            | Final written report with introduction, analysis summary, and conclusions.                                                        | Tracked by Git.                                      |
 | `data_cleaning.Rmd`        | Script used for initial cleaning and merging (e.g., ``).                                                                          | Tracked by Git.                                      |
-| `images/`              | Exported plots used in the final report and presentation.                                                                         | Tracked by Git.                                      |
+| `report_images/`              | Exported plots used in the final report and presentation.                                                                         | Tracked by Git.                                      |
 
 ## Research Questions
 
