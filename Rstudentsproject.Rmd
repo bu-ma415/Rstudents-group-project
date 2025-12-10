@@ -161,12 +161,8 @@ The tallest bar shows that nearly 10,000 restaurants have been inspected only on
 
 ## Gian's Analysis
 
-<<<<<<< HEAD
 I would like to investigate the geographic distribution of different
-aspects of the health code inspections in Boston. To do this, I will
-isolate all of the Boston health inspection records and map several
-factors of the data onto a map of the City of Boston, separated by
-zipcode subsection.
+aspects of the health code inspections in Boston. 
 
 We have a restaurant density map already from EDA, but I want to be more
 specific and see what the restaurant hotspots are in the city.
@@ -181,9 +177,6 @@ bos <- st_read("Boston Shapefiles/ZIP_Codes.shp")
 
 bos_borders <- bos |> st_union() |>
   st_buffer(.5)
-
-###### ^^^^ Upload Shapefiles (same as EDA) ######
-
 
 ind_rsts_old <- bos_insp |>
   distinct(address_full, .keep_all = TRUE) |>
@@ -249,17 +242,11 @@ ggplot() +
 As we can see, there are hotspots near Harvard Ave in Allston, the North
 End, Downtown Crossing, Chinatown, and Newbury St.
 
-Seeing this distribution, I'm wondering if there are differences between
-health code inspections for restaurants that are heavily clustered vs.
-restaurants that are lightly distributed in their area. We will call the
-former "Suburban" restaurants and the latter "Urban" restaurants.
 
 **Suburban vs. Urban restaurants**
 
 To make this comparison, we will have to establish rules for what
-categorizes a restaurant as rural or urban. This will include all
-restaurants that were opened For this investigation, these will be the
-categories:
+categorizes a restaurant as rural or urban.
 
 [Urban:]{.underline} Has more than or equal to **10** other restaurants
 within a **100 meter** radius.
@@ -310,14 +297,9 @@ ggplot() +
     labels = c("TRUE" = "Urban", "FALSE" = "Suburban")
   )
 
-
-
 ```
 
 **Hypothesis Tests**
-
-Now that we've designated each restaurant as Urban or Rural, we can run
-some hypothesis tests.
 
 Do urban or suburban restaurants have more failed health inspections? Is
 this difference significant?
@@ -379,11 +361,6 @@ With a p-value of 6.969x10\^-10, we can reject the null hypothesis that
 the categories are independent from each another. [We have evidence that
 Urban/Suburban designation and health inspection pass rates are
 dependent on one another.]{.underline}
-
-Now we want to know the specific relationship between Urban/Suburban
-designation and Pass/Fail rates, if any. We will start by adding more
-categories, expanding Suburban/Urban to Rural/Suburban/Urban/Dense
-Urban.
 
 **Number of Restaurants Within a 100 Meter Radius (Based on IQR)**
 
@@ -459,8 +436,6 @@ ggplot(data = vln_join, aes(x = n_neighbor, y = pass_rate)) +
 
 
 ```
-=======
->>>>>>> main
 
 This graph corroborates the information we found from the Chi-Squared
 test. There is a slight positive trend between the number of neighbors
