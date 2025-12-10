@@ -65,13 +65,13 @@ The geographic analysis focused on **Boston** to identify localized risk factors
     -   **Significance:** A Chi-Squared Test yielded a p-value of $6.969 \times 10^{-10}$, allowing us to reject the null hypothesis. We have evidence that Urban/Suburban designation and health inspection pass rates **are dependent on one another**.
     -   ![](report_images/hotspot_map.png)
 
--   **Detailed Relationship:** Bellow is a scatterplot with a smoothing spline, exploring the relationship between the number of neighbors and the restaurant's average pass rate confirmed the overall trend: there is a slight positive correlation between restaurant clustering and passing rates.
+-   **Detailed Relationship:** Below is a scatterplot with a smoothing spline, exploring the relationship between the number of neighbors and the restaurant's average pass rate confirmed the overall trend: there is a slight positive correlation between restaurant clustering and passing rates.
 
     -   **Confidence:** Although slight, we are **very confident** that this trend exists, as evidenced by the narrowness of the green prediction (standard error never exceeds 2.5%).
 
     -   **Number of Inspections:** The total number of inspections per restaurant **does not seem to differ** with the number of neighbors, but does differ slightly by pass rate. The larger the number of inspections a restaurant has, the more they tend to hover around a 50% pass rate.
 
-![](report_images/Neighbors v. Pass Rate.png)
+![](report_images/Neighbors%20v.%20Pass%20Rate.png).
 
 ### Q2. Restaurant Risk & Inspection Types (Seun's Analysis)
 
