@@ -59,6 +59,8 @@ The geographic analysis focused on **Boston** to identify localized risk factors
 
 -   **Hotspot Identification:** The restaurant density map revealed significant clustering near major metropolitan areas like the North End, Downtown Crossing, and Chinatown.
 
+![](report_images/Boston%20Hotspot%20Density%20Map.png)
+
 -   **Urban/Suburban Pass Rate Test:** A two-category comparison was conducted, designating a restaurant as "Urban" if it had 10 or more neighbors within a 100-meter radius, and "Suburban" otherwise.
 
     -   **Finding:** The proportion table showed that the Pass Rate for Urban restaurants was **0.8% higher** than for Suburban restaurants. This suggests suburban restaurants tend to fail health inspections slightly more often.
