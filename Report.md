@@ -161,13 +161,17 @@ With additional time, richer contextual data, and a deeper standardization betwe
 
 ## Conclusion
 
-This investigation examined food inspection records from several different angles: geospatial calculations, bigram patterns via restaurant type, seasonal trends through violation category, and longitudinal trends over ~20 years. In totality, our findings revealed a wealth of information about 
+This investigation examined food inspection records from several different angles: geospatial calculations, bigram patterns via restaurant type, seasonal trends through violation category, and longitudinal trends over ~20 years. "Sanitation & Cleaning," "Pest Control," "Food Temperture" and spring-season violations stood out as the most persistent and impactful trends across cities and restaurant types.
 
-Though there were several notable limitations, conclusions can still be drawn from each analysis
+In Boston, restaurants with more nearby neighbors were slightly more likely to pass inspection. The trend is statistically clear but weak, amounting to only about a 0.8% increase in pass rate per additional neighboring restaurant. It remains uncertain whether suburban restaurants truly have more violations or whether urban inspections are conducted more rigorously.
 
-A restaurant’s location in Boston is associated with its overall likelihood of passing health inspections, specifically when considering how densely populated areas are with restaurants.
+Across Boston, New York, Chicago, and San Francisco, Sanitation & Cleaning was the most frequent violation type across nearly all establishment categories. The primary exception was Bars/Pubs, which had more Pest Control violations. Restaurants in general were particularly prone to Food Temperature violations. Complaint-driven inspections also revealed more high-risk violations than routine inspections.
 
+Violation types also varied by season. Pest Control violations peaked in the fall across all cities, while Sanitation, Employee Hygiene, and Facility/Maintenance violations peaked in the spring—the season with the second-highest inspection volume (after fall, especially October). Over the past 18 years, total violations consistently increased, aside from a temporary drop during the COVID-19 pandemic. Post-pandemic, violations rose again, especially in Sanitation & Cleaning, Pest Control, and Cross-Contamination.
 
+These findings point to several policy implications. For immediate risk mitigation, more resources should be directed toward complaint-driven inspections and spring inspections, both of which uncover higher rates of severe violations. For prevention, pest-control efforts should be expanded during the fall and for bars/pubs year-round. Because Sanitation & Cleaning violations are consistently the most common—and Food Temperature issues are especially common in restaurants—both immediate and long-term interventions should prioritize these areas, including strengthened employee training. Location-based pass-rate differences exist but are small and should not be prioritized.
+
+FFuture research should focus on inspection methodology, including training protocols and inspector-level consistency. Understanding how inspections are conducted across restaurant types, locations, and seasons would strengthen the reliability of these findings and support more precise, effective policy interventions.
 
 
 ## References
